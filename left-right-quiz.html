@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>左右タッチ即判定クイズ（会計ボキササイズ）</title>
+<title>BokiExercise 左右タッチ即判定クイズ</title>
 <style>
   :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
   * { box-sizing: border-box; }
@@ -13,7 +13,7 @@
   header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
   header h1 { font-size: 16px; margin: 0; flex:1; }
   header .meta { font-size:12px; color: var(--muted); }
-  #questionBox { padding: 18px 16px; text-align:center; font-size: clamp(18px, 4.5vw, 28px); line-height:1.4; }
+  #questionBox { padding: 18px 16px; text-align:left; font-size: clamp(18px, 4.5vw, 28px); line-height:1.4; overflow-y:auto; max-height: 40vh;}
   #question { margin: 6px 0 4px; }
   #sub { font-size: 12px; color: var(--muted); }
   #arena { flex:1; display:flex; }
@@ -31,16 +31,21 @@
   #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
   .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
   #importer { display:none; }
-  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; }
+  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
   details { background: var(--card); margin: 0 16px 12px; padding: 10px 12px; border-radius: 10px; }
   summary { cursor: pointer; font-weight: 600; }
   code { background:#0f1319; padding:2px 6px; border-radius:6px; }
+  .result-item { font-size:14px; margin-bottom:8px; }
+  .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
+  .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
+  .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
+  .small-muted { font-size:11px; color:var(--muted); }
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <h1>左右タッチ即判定クイズ</h1>
+    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
     <div class="meta"><span class="pill" id="modePill">左=借方 / 右=貸方</span></div>
   </header>
 
@@ -71,7 +76,7 @@
       1行に「問題文, 正解サイド(left|right)」の形式で貼り付けてください。TSVでもOK。例：<br>
       <code>現金を増やす仕訳は？,left</code> / <code>売上は？,right</code>
     </p>
-    <textarea id="importText" placeholder="例）\n現金を増やす仕訳は？,left\n売上は？,right"></textarea>
+    <textarea id="importText" placeholder="例）&#10;現金を増やす仕訳は？,left&#10;売上は？,right"></textarea>
     <div style="display:flex; gap:8px; margin-top:8px;">
       <button id="btnPreview" style="flex:1;">プレビュー</button>
       <button id="btnApply" style="flex:1;">適用</button>
@@ -79,7 +84,7 @@
     <p id="importer" style="font-size:12px; color:#9aa0a6; margin-top:6px;"></p>
   </details>
 
-  <div id="footerNote">© 会計ボキササイズ｜画面の左右どちらかをタップして即判定</div>
+  <div id="footerNote">© BokiExercise｜画面の左右どちらかをタップして即判定</div>
 </div>
 
 <div id="flash"></div>
@@ -108,6 +113,7 @@ let defaultQuestions = [
 let questions = JSON.parse(JSON.stringify(defaultQuestions));
 let idx = 0, ok = 0, ng = 0, streak = 0;
 let mode = 'debitLeft'; // 'debitLeft' or 'swap'
+let results = []; // 問題ごとの結果保存
 
 const elQ = document.getElementById('question');
 const elSub = document.getElementById('sub');
@@ -118,6 +124,7 @@ const elNg = document.getElementById('ng');
 const elStreak = document.getElementById('streak');
 const flash = document.getElementById('flash');
 const modePill = document.getElementById('modePill');
+const questionBox = document.getElementById('questionBox');
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -129,6 +136,7 @@ function shuffle(a){
 
 function start(){
   idx = 0; ok = 0; ng = 0; streak = 0;
+  results = [];
   questions = shuffle([...questions]);
   elTotal.textContent = questions.length;
   elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
@@ -137,8 +145,7 @@ function start(){
 
 function next(){
   if (idx >= questions.length){
-    elQ.textContent = `終了！ 正解 ${ok} / ${questions.length}`;
-    elSub.textContent = 'リセットで再挑戦できます';
+    showResults();
     return;
   }
   const item = questions[idx];
@@ -151,13 +158,13 @@ function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
 
 // 簡易ビープ（初回ユーザー操作後のみ作動）
 let audioCtx = null;
-function beep(ok=true){
+function beep(okFlag=true){
   try{
     if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = 'sine';
-    o.frequency.value = ok ? 880 : 220;
+    o.frequency.value = okFlag ? 880 : 220;
     g.gain.value = 0.02;
     o.connect(g); g.connect(audioCtx.destination);
     o.start();
@@ -168,10 +175,20 @@ function beep(ok=true){
 function judge(side){
   if (idx >= questions.length) return;
   const item = questions[idx];
-  let correct = item.correct;
+  let effectiveCorrect = item.correct;
   // モードがswapの場合は左右を反転
-  if (mode === 'swap') correct = (correct==='left'?'right':'left');
-  const isOK = (side === correct);
+  if (mode === 'swap') effectiveCorrect = (effectiveCorrect==='left'?'right':'left');
+  const isOK = (side === effectiveCorrect);
+
+  // 結果保存（もとの正解も残しておく）
+  results.push({
+    no: idx+1,
+    question: item.q,
+    answered: side,
+    correct: effectiveCorrect,
+    baseCorrect: item.correct,
+    isOK: isOK
+  });
 
   showFlash(isOK);
   if (isOK){ ok++; streak++; vibrate(20); beep(true); }
@@ -190,14 +207,58 @@ function showFlash(isOK){
   setTimeout(()=>{ flash.style.display='none'; }, 320);
 }
 
+// 結果一覧表示
+function showResults(){
+  const total = questions.length;
+  const percent = total ? Math.round(ok / total * 100) : 0;
+
+  // HTML表示用
+  let html = "";
+  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
+  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
+
+  results.forEach(r => {
+    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
+    const badgeLabel = r.isOK ? '○' : '×';
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp = r.correct === 'left' ? '左' : '右';
+
+    html += `<div class="result-item">
+      <span class="badge ${badgeClass}">${badgeLabel}</span>
+      <strong>${r.no}. ${r.question}</strong><br>
+      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
+    </div>`;
+  });
+
+  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
+
+  // コピー用テキスト（CSV風）
+  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
+  results.forEach(r => {
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp = r.correct === 'left' ? '左' : '右';
+    const status = r.isOK ? "正解" : "不正解";
+    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
+    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
+  });
+
+  html += `<div style="margin-top:10px;">
+    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
+    <textarea readonly onclick="this.select()">${textReport}</textarea>
+  </div>`;
+
+  questionBox.innerHTML = html;
+  elIdx.textContent = total;
+  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
+}
+
 document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
 document.getElementById('btnStart').addEventListener('click', start);
 document.getElementById('btnReset').addEventListener('click', ()=>{
-  idx=questions.length; next();
+  idx=questions.length; // 強制終了
+  showResults();
   elIdx.textContent = 0; elOk.textContent = 0; elNg.textContent = 0; elStreak.textContent = 0;
-  document.getElementById('question').textContent = 'スタートを押してください';
-  document.getElementById('sub').textContent = (mode==='debitLeft') ? '左=借方 / 右=貸方' : '左=貸方 / 右=借方';
 });
 
 document.getElementById('btnToggle').addEventListener('click', ()=>{
