@@ -256,9 +256,7 @@ document.getElementById('leftSide').addEventListener('click', ()=>judge('left'))
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
 document.getElementById('btnStart').addEventListener('click', start);
 document.getElementById('btnReset').addEventListener('click', ()=>{
-  idx=questions.length; // 強制終了
-  showResults();
-  elIdx.textContent = 0; elOk.textContent = 0; elNg.textContent = 0; elStreak.textContent = 0;
+  window.location.reload();
 });
 
 document.getElementById('btnToggle').addEventListener('click', ()=>{
