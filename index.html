@@ -212,11 +212,41 @@ function showResults(){
   const total = questions.length;
   const percent = total ? Math.round(ok / total * 100) : 0;
 
+  // 成長ステージ表示（種・芽・花）
+  let growthHtml = "";
+  if (total > 0 && ok === total) {
+    // 全問正解 → 花が咲く
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌸</div>
+        <div class="small-muted">全問正解！花が咲きました。</div>
+      </div>
+    `;
+  } else if (ok <= 5) {
+    // 0〜5問正解 → 種まき
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌱</div>
+        <div class="small-muted">今日は種まきの日。少しずつ育てていきましょう。</div>
+      </div>
+    `;
+  } else {
+    // それ以外 → 芽・つぼみ
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌿</div>
+        <div class="small-muted">芽が出てきました。続ければきっと満開になります。</div>
+      </div>
+    `;
+  }
+
   // HTML表示用
   let html = "";
+  html += growthHtml;
   html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
   html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
 
+  
   results.forEach(r => {
     const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
     const badgeLabel = r.isOK ? '○' : '×';
