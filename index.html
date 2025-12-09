@@ -13,8 +13,18 @@
   header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
   header h1 { font-size: 16px; margin: 0; flex:1; }
   header .meta { font-size:12px; color: var(--muted); }
-  #questionBox { padding: 18px 16px; text-align:left; font-size: clamp(18px, 4.5vw, 28px); line-height:1.4; overflow-y:auto; max-height: 40vh;}
-  #question { margin: 6px 0 4px; }
+　#questionBox {
+  padding: 18px 16px;
+  text-align: center;                /* 中央寄せ */
+  font-size: clamp(20px, 6vw, 32px); /* 文字を大きくする推奨設定 */
+  line-height:1.4;
+  overflow-y:auto;
+  max-height: 40vh;
+　}
+　#question {
+  margin: 6px 0 4px;
+  font-weight: 600;                  /* 太字 */
+  text-align: cen
   #sub { font-size: 12px; color: var(--muted); }
   #arena { flex:1; display:flex; }
   .side { flex:1; display:flex; align-items:center; justify-content:center; font-size: clamp(28px, 8vw, 44px); font-weight:700; border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent; }
