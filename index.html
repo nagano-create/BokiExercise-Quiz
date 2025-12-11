@@ -10,59 +10,124 @@
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
   #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
+
   header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
   header h1 { font-size: 16px; margin: 0; flex:1; }
-  header .meta { font-size:12px; color: var(--muted); }
-#questionBox {
-  padding: 18px 16px;
-  text-align: center;                /* 中央寄せ */
-  font-size: clamp(20px, 6vw, 32px); /* 文字を大きくする推奨設定 */
-  line-height:1.4;
-  overflow-y:auto;
-  max-height: 40vh;
-}
-#question {
-  margin: 6px 0 4px;
-  font-weight: 600;                  /* 太字 */
-  text-align: center;                /* 中央寄せ */
-}
+  header .meta { font-size:12px; color: var(--muted); display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+
+  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
+
+  /* セット選択バー */
+  .set-bar {
+    padding: 10px 16px;
+    background: #131720;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+  }
+  .set-bar label { color: var(--muted); }
+  #setSelector {
+    padding:4px 8px;
+    border-radius:6px;
+    border:1px solid #2b2f3a;
+    background:#0f1319;
+    color:var(--fg);
+    font-size:13px;
+  }
+  #setNameHint {
+    font-size:11px;
+    color:var(--muted);
+    margin-left:auto;
+  }
+
+  /* 問題表示 */
+  #questionBox {
+    padding: 18px 16px;
+    text-align: center;
+    font-size: clamp(20px, 6vw, 32px);
+    line-height:1.4;
+    overflow-y:auto;
+    max-height: 40vh;
+  }
+  #question {
+    margin: 6px 0 4px;
+    font-weight: 600;
+    text-align: center;
+  }
   #sub { font-size: 12px; color: var(--muted); }
+
+  /* 左右タッチエリア */
   #arena { flex:1; display:flex; }
   .side { flex:1; display:flex; align-items:center; justify-content:center; font-size: clamp(28px, 8vw, 44px); font-weight:700; border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent; }
   .left { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
   .right { background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
   .label { pointer-events: none; opacity:.9; }
+
+  /* スコアバー & ボタン */
+  #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
   #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
   button { flex:1; padding: 12px; border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg); border-radius:10px; font-size:14px; }
   button:active { transform: scale(.98); }
-  #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
-  #flash { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; font-size: clamp(60px, 18vw, 120px); font-weight:900; z-index: 10; }
+
+  /* ○✕フラッシュ */
+  #flash {
+    position: fixed;
+    inset: 0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    font-size: clamp(60px, 18vw, 120px); /* 大きめ ○✕ */
+    font-weight:900;
+    z-index: 10;
+  }
   #flash.ok { background: rgba(29,185,84,.12); color: var(--ok); }
   #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
+
   #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
-  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
+
   #importer { display:none; }
   textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
   details { background: var(--card); margin: 0 16px 12px; padding: 10px 12px; border-radius: 10px; }
   summary { cursor: pointer; font-weight: 600; }
   code { background:#0f1319; padding:2px 6px; border-radius:6px; }
+
   .result-item { font-size:14px; margin-bottom:8px; }
   .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
   .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
   .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
   .small-muted { font-size:11px; color:var(--muted); }
-.growth-emoji {
-  font-size: 120px;  /* ←ここを変えれば大きく/小さく */
-  line-height: 1.1;
-}
+
+  .growth-emoji {
+    font-size: 120px;
+    line-height: 1.1;
+  }
+  .growth-box {
+    text-align:center;
+    margin-bottom:16px;
+  }
 </style>
 </head>
 <body>
 <div id="app">
   <header>
     <h1>BokiExercise 左右タッチ即判定クイズ</h1>
-    <div class="meta"><span class="pill" id="modePill">左=借方 / 右=貸方</span></div>
+    <div class="meta">
+      <span class="pill" id="modePill">左=借方 / 右=貸方</span>
+      <span class="pill" id="setPill">3級仕訳標準</span>
+    </div>
   </header>
+
+  <!-- セット選択バー -->
+  <div class="set-bar">
+    <label for="setSelector">問題セット：</label>
+    <select id="setSelector">
+      <option value="standard">3級仕訳標準</option>
+      <option value="shouhin">3級仕訳基礎1.商品取引</option>
+      <option value="kotei">3級仕訳基礎2.固定資産</option>
+    </select>
+    <div id="setNameHint">レベルに合わせて選択してください。</div>
+  </div>
 
   <div id="questionBox">
     <div id="question">スタートを押してください</div>
@@ -105,7 +170,7 @@
 <div id="flash"></div>
 
 <script>
-// --- データ（初期セット：会計ボキササイズ向け） ---
+// --- 基本セット（3級仕訳標準：元からあった問題） ---
 // correct: 'left' or 'right'
 let defaultQuestions = [
   { q: "資産（現金・売掛金など）が『増加』するのは？", correct: "left" },    // 借方
@@ -125,6 +190,61 @@ let defaultQuestions = [
   { q: "前受金が発生したときの『前受金』は？", correct: "right" }               // 負債増加→貸方
 ];
 
+// --- 新セット：3級仕訳基礎1.商品取引 ---
+const set_shouhin = [
+  { q: "商品を現金で仕入れたときの『仕入』は？", correct: "left" },
+  { q: "商品を現金で仕入れたときの『現金』は？", correct: "right" },
+
+  { q: "掛けで商品を仕入れたときの『買掛金』は？", correct: "right" },
+  { q: "掛けで商品を仕入れたときの『仕入』は？", correct: "left" },
+
+  { q: "掛けで商品を販売したときの『売上』は？", correct: "right" },
+  { q: "掛けで商品を販売したときの『売掛金』は？", correct: "left" },
+
+  { q: "受取手形で売掛金を回収したときの『受取手形』は？", correct: "left" },
+  { q: "受取手形で売掛金を回収したときの『売掛金』は？", correct: "right" },
+
+  { q: "小切手で商品を販売したときの『当座預金』は？", correct: "left" },
+  { q: "小切手で商品を販売したときの『売上』は？", correct: "right" },
+
+  { q: "買掛金を支払手形で支払ったときの『支払手形』は？", correct: "right" },
+  { q: "買掛金を支払手形で支払ったときの『買掛金』は？", correct: "left" },
+
+  { q: "売掛金を現金で回収したときの『現金』は？", correct: "left" },
+  { q: "売掛金を現金で回収したときの『売掛金』は？", correct: "right" }
+];
+
+// --- 新セット：3級仕訳基礎2.固定資産 ---
+const set_kotei = [
+  { q: "建物を現金で購入したときの『建物』は？", correct: "left" },
+  { q: "建物を現金で購入したときの『現金』は？", correct: "right" },
+
+  { q: "備品を掛けで購入したときの『備品』は？", correct: "left" },
+  { q: "備品を掛けで購入したときの『未払金』は？", correct: "right" },
+
+  { q: "車両運搬具を現金で購入したときの『車両運搬具』は？", correct: "left" },
+  { q: "車両運搬具を現金で購入したときの『現金』は？", correct: "right" },
+
+  { q: "建物の減価償却費を計上したときの『減価償却費』は？", correct: "left" },
+  { q: "建物の減価償却費を計上したときの『減価償却累計額』は？", correct: "right" },
+
+  { q: "備品を売却し、売却益が出たときの『固定資産売却益』は？", correct: "right" },
+  { q: "備品を売却し、売却損が出たときの『固定資産売却損』は？", correct: "left" },
+
+  { q: "土地を売却し、現金を受け取ったときの『現金』は？", correct: "left" },
+  { q: "土地を売却したときの『土地』は？", correct: "right" },
+
+  { q: "減価償却累計額を使う『間接法』で増加する勘定、『減価償却累計額』は？", correct: "right" },
+  { q: "減価償却の『直接法』では、減少させる勘定『建物』はどちら側？", correct: "right" }
+];
+
+// --- セット辞書 ---
+const questionSets = {
+  standard: defaultQuestions,
+  shouhin: set_shouhin,
+  kotei: set_kotei,
+};
+
 let questions = JSON.parse(JSON.stringify(defaultQuestions));
 let idx = 0, ok = 0, ng = 0, streak = 0;
 let mode = 'debitLeft'; // 'debitLeft' or 'swap'
@@ -140,6 +260,8 @@ const elStreak = document.getElementById('streak');
 const flash = document.getElementById('flash');
 const modePill = document.getElementById('modePill');
 const questionBox = document.getElementById('questionBox');
+const setSelector = document.getElementById('setSelector');
+const setPill = document.getElementById('setPill');
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -212,7 +334,8 @@ function judge(side){
   elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
 
   idx++;
-  setTimeout(next,1000);  // ← 1000msの“ため”を追加
+  // ここで“ため”を0.9秒
+  setTimeout(next, 900);
 }
 
 function showFlash(isOK){
@@ -261,7 +384,6 @@ function showResults(){
   html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
   html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
 
-  
   results.forEach(r => {
     const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
     const badgeLabel = r.isOK ? '○' : '×';
@@ -297,6 +419,7 @@ function showResults(){
   elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
 }
 
+// イベント設定
 document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
 document.getElementById('btnStart').addEventListener('click', start);
@@ -330,6 +453,7 @@ document.getElementById('btnApply').addEventListener('click', ()=>{
     defaultQuestions = JSON.parse(JSON.stringify(parsed));
     importerMsg.style.display='block';
     importerMsg.textContent = `適用しました：${parsed.length} 問`;
+    elTotal.textContent = questions.length;
     start();
   }catch(e){
     importerMsg.style.display='block';
@@ -357,6 +481,25 @@ window.addEventListener('keydown', (e)=>{
   if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
   else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
   else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
+});
+
+// セット選択変更時
+setSelector.addEventListener('change', (e)=>{
+  const key = e.target.value;
+  const labelMap = {
+    standard: "3級仕訳標準",
+    shouhin: "3級仕訳基礎1.商品取引",
+    kotei: "3級仕訳基礎2.固定資産"
+  };
+  setPill.textContent = labelMap[key] || "問題セット";
+
+  questions = JSON.parse(JSON.stringify(questionSets[key]));
+  defaultQuestions = JSON.parse(JSON.stringify(questionSets[key]));
+  idx = 0; ok = 0; ng = 0; streak = 0; results = [];
+  elOk.textContent = 0; elNg.textContent = 0; elStreak.textContent = 0;
+  elIdx.textContent = 0; elTotal.textContent = questions.length;
+  elQ.textContent = "スタートを押してください";
+  elSub.textContent = (mode==='debitLeft') ? '左=借方 / 右=貸方' : '左=貸方 / 右=借方';
 });
 </script>
 </body>
