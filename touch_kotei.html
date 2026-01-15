@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>日商簿記3級 仕訳 基礎2（固定資産）タッチ</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#111a2e; --bd:#24324f; --txt:#eaf0ff; --mut:#a9b6d6;
+      --ok:#34d399; --ng:#fb7185; --shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+      background:linear-gradient(180deg, #070b14 0%, var(--bg) 40%, #070b14 100%);
+      color:var(--txt);
+    }
+    .wrap{max-width:980px; margin:0 auto; padding:16px;}
+    h1{font-size:18px; margin:6px 0 6px;}
+    .sub{color:var(--mut); font-size:12px; line-height:1.55; margin:0 0 12px;}
+    .topbar{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
+      border-radius:14px; padding:10px 12px; box-shadow:var(--shadow);
+      position:sticky; top:10px; z-index:5; backdrop-filter: blur(6px);
+    }
+    .topbar a{
+      color:var(--txt); text-decoration:none; border:1px solid rgba(255,255,255,.12);
+      padding:8px 10px; border-radius:12px; background:rgba(255,255,255,.04);
+      font-size:12px;
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      color:var(--txt); padding:10px 12px; border-radius:14px;
+      cursor:pointer; font-weight:700; font-size:13px;
+    }
+    .btn:hover{background:rgba(255,255,255,.08)}
+    .score{font-weight:800;}
+    .hint{color:var(--mut); font-size:12px;}
+    .q{
+      margin:14px 0; padding:12px;
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px; box-shadow:var(--shadow);
+    }
+    .qhead{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
+    .qid{font-weight:900; font-size:14px;}
+    .tag{font-size:11px; color:#dbe6ff; border:1px solid rgba(255,255,255,.14); padding:2px 8px; border-radius:999px; opacity:.9;}
+    .qtext{margin:10px 0 10px; line-height:1.6; color:#f3f6ff;}
+    .lr{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    @media (max-width: 520px){ .lr{grid-template-columns:1fr;} }
+    .side{
+      background:rgba(0,0,0,.18);
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:16px; padding:10px;
+    }
+    .side h3{margin:0 0 8px; font-size:13px; color:#eaf0ff;}
+    .chips{display:flex; flex-wrap:wrap; gap:8px;}
+    .chip{
+      padding:9px 10px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      cursor:pointer; user-select:none; font-size:13px; font-weight:700;
+      transition: transform .05s ease;
+    }
+    .chip:active{transform: scale(.98);}
+    .chip.selL{outline:2px solid rgba(239,68,68,.9); background:rgba(239,68,68,.12);}
+    .chip.selR{outline:2px solid rgba(59,130,246,.9); background:rgba(59,130,246,.12);}
+    .picked{margin-top:10px; font-size:12px; color:var(--mut); line-height:1.5;}
+    .picked b{color:#fff;}
+    .actions{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .result{font-weight:900;}
+    .ok{color:var(--ok);}
+    .ng{color:var(--ng);}
+    details{margin-top:10px;}
+    summary{cursor:pointer; font-weight:900; color:#eaf0ff;}
+    .exp{margin-top:8px; color:#eaf0ff; line-height:1.65; font-size:13px;}
+    .exp code{background:rgba(255,255,255,.08); padding:2px 6px; border-radius:8px;}
+    .bottombar{
+      margin:18px 0 40px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      justify-content:space-between;
+      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
+      border-radius:14px; padding:10px 12px; box-shadow:var(--shadow);
+    }
+    .burst{position:fixed; inset:0; pointer-events:none; overflow:hidden;}
+    .petal{
+      position:absolute; top:-10vh; font-size:18px; opacity:.95;
+      animation: fall linear forwards;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.25));
+    }
+    @keyframes fall{
+      to{ transform: translateY(120vh) rotate(540deg); opacity:0.9; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>日商簿記3級 仕訳 基礎2（固定資産）タッチ（15問）</h1>
+    <p class="sub">
+      ルール：各問で <b>左（借方）</b> と <b>右（貸方）</b> を1つずつタッチ。<br>
+      固定資産＝備品/建物/車両運搬具/土地。減価償却は「費用＋累計額」。
+    </p>
+
+    <div class="topbar">
+      <button class="btn" id="gradeAll">15問まとめて採点</button>
+      <span class="score">得点：<span id="score">-</span> / 15</span>
+      <span class="hint">※各問「この1問を採点」も可</span>
+      <a href="./touch_shouhin.html">← 基礎1（商品取引）へ</a>
+      <a href="./touch_genkin.html">基礎0（現金のみ）へ</a>
+      <a href="./index.html">標準モードへ →</a>
+    </div>
+
+    <div id="app"></div>
+
+    <div class="bottombar">
+      <button class="btn" id="gradeAll2">15問まとめて採点</button>
+      <div class="score">得点：<span id="score2">-</span> / 15</div>
+    </div>
+  </div>
+
+  <div class="burst" id="burst"></div>
+
+<script>
+/**
+ * 基礎2（固定資産）
+ * 左1つ / 右1つ の反射練習（本格の複合は後）
+ */
+const QUESTIONS = [
+  {id:1, tag:"易", q:"現金で備品を購入した。", opts:["現金","備品","未払金","買掛金","消耗品費","売上"], ans:{L:"備品", R:"現金"},
+   exp:"解説：現金↓減。理由は固定資産（備品）増。\n答：備品 ／ 現金"},
+  {id:2, tag:"易", q:"備品を後払いで購入した。", opts:["備品","未払金","現金","買掛金","消耗品費","売掛金"], ans:{L:"備品", R:"未払金"},
+   exp:"解説：現金はまだ。後払い＝未払。\n答：備品 ／ 未払金"},
+  {id:3, tag:"易", q:"現金で建物を購入した。", opts:["建物","現金","未払金","土地","備品","借入金"], ans:{L:"建物", R:"現金"},
+   exp:"解説：現金↓減。理由は建物（固定資産）増。\n答：建物 ／ 現金"},
+  {id:4, tag:"易", q:"車両運搬具を後払いで購入した。", opts:["車両運搬具","未払金","現金","買掛金","備品","借入金"], ans:{L:"車両運搬具", R:"未払金"},
+   exp:"解説：現金はまだ。固定資産の後払い＝未払。\n答：車両運搬具 ／ 未払金"},
+  {id:5, tag:"易", q:"現金で土地を購入した。", opts:["土地","現金","建物","未払金","借入金","備品"], ans:{L:"土地", R:"現金"},
+   exp:"解説：現金↓減。理由は土地（固定資産）増。\n答：土地 ／ 現金"},
+
+  {id:6, tag:"中", q:"備品の減価償却を行った。", opts:["減価償却費","減価償却累計額","現金","備品","雑費","修繕費"], ans:{L:"減価償却費", R:"減価償却累計額"},
+   exp:"解説：現金は動かず。費用↑と累計額↑。\n答：減償 ／ 減累"},
+  {id:7, tag:"中", q:"建物の減価償却を行った。", opts:["減価償却費","減価償却累計額","建物","現金","支払利息","修繕費"], ans:{L:"減価償却費", R:"減価償却累計額"},
+   exp:"解説：現金は動かず。費用↑と累計額↑。\n答：減償 ／ 減累"},
+  {id:8, tag:"中", q:"備品の修理代を現金で支払った。", opts:["修繕費","現金","備品","減価償却費","未払金","消耗品費"], ans:{L:"修繕費", R:"現金"},
+   exp:"解説：現金↓減。理由は修理＝費用。\n答：修繕費 ／ 現金"},
+  {id:9, tag:"中", q:"車両運搬具の修理代を後払いとした。", opts:["修繕費","未払金","車両運搬具","現金","買掛金","雑費"], ans:{L:"修繕費", R:"未払金"},
+   exp:"解説：現金はまだ。費用が先＝未払。\n答：修繕費 ／ 未払金"},
+  {id:10, tag:"中", q:"備品を現金で売却した。", opts:["現金","備品","固定資産売却益","固定資産売却損","売上","減価償却累計額"], ans:{L:"現金", R:"備品"},
+   exp:"解説：現金↑増。資産（備品）↓減。\n答：現金 ／ 備品"},
+
+  {id:11, tag:"難", q:"備品を後払いで売却した（代金は後日受取）。", opts:["未収金","備品","売掛金","固定資産売却益","現金","未払金"], ans:{L:"未収金", R:"備品"},
+   exp:"解説：現金はまだ。代わりに未収。\n答：未収金 ／ 備品"},
+  {id:12, tag:"難", q:"固定資産の購入代金を借入で支払った。", opts:["備品","借入金","現金","未払金","建物","支払利息"], ans:{L:"備品", R:"借入金"},
+   exp:"解説：現金は使わず。借金で買った。\n答：備品 ／ 借入金"},
+  {id:13, tag:"難", q:"建物を現金で売却した（この段階では損益は考えない）。", opts:["現金","建物","固定資産売却益","固定資産売却損","売上","未収金"], ans:{L:"現金", R:"建物"},
+   exp:"解説：現金↑増。資産（建物）↓減。\n答：現金 ／ 建物"},
+  {id:14, tag:"難", q:"土地を後払いで購入した。", opts:["土地","未払金","現金","借入金","建物","買掛金"], ans:{L:"土地", R:"未払金"},
+   exp:"解説：現金はまだ。土地↑増、未払↑増。\n答：土地 ／ 未払金"},
+  {id:15, tag:"難", q:"固定資産を売却し、代金は後日受け取ることとした。", opts:["未収金","備品","現金","売掛金","固定資産売却益","未払金"], ans:{L:"未収金", R:"備品"},
+   exp:"解説：現金はまだ。代わりに未収。\n答：未収金 ／ 備品"},
+];
+
+const app = document.getElementById("app");
+const burst = document.getElementById("burst");
+
+function makeChip(text, side, onPick){
+  const el = document.createElement("div");
+  el.className = "chip";
+  el.textContent = text;
+  el.addEventListener("click", () => onPick(text, el, side));
+  return el;
+}
+
+function render(){
+  app.innerHTML = "";
+  QUESTIONS.forEach(q => {
+    const card = document.createElement("div");
+    card.className = "q";
+    card.dataset.qid = q.id;
+
+    const head = document.createElement("div");
+    head.className = "qhead";
+    head.innerHTML = `<div class="qid">【${q.id}】<span class="tag">${q.tag}</span></div>`;
+
+    const qtext = document.createElement("div");
+    qtext.className = "qtext";
+    qtext.textContent = q.q;
+
+    const lr = document.createElement("div");
+    lr.className = "lr";
+
+    const left = document.createElement("div");
+    left.className = "side";
+    left.innerHTML = `<h3>左（借方）</h3>`;
+
+    const right = document.createElement("div");
+    right.className = "side";
+    right.innerHTML = `<h3>右（貸方）</h3>`;
+
+    const picked = document.createElement("div");
+    picked.className = "picked";
+    picked.innerHTML = `選択：<b class="pickL">（未選択）</b> ／ <b class="pickR">（未選択）</b>`;
+
+    const chipsL = document.createElement("div");
+    chipsL.className = "chips";
+    const chipsR = document.createElement("div");
+    chipsR.className = "chips";
+
+    let pickedL = null, pickedR = null;
+    let pickedLEl = null, pickedREl = null;
+
+    const updatePicked = () => {
+      card.querySelector(".pickL").textContent = pickedL || "（未選択）";
+      card.querySelector(".pickR").textContent = pickedR || "（未選択）";
+    };
+
+    const onPick = (text, el, side) => {
+      if (side === "L"){
+        if (pickedLEl) pickedLEl.classList.remove("selL");
+        pickedL = text; pickedLEl = el;
+        el.classList.add("selL");
+      } else {
+        if (pickedREl) pickedREl.classList.remove("selR");
+        pickedR = text; pickedREl = el;
+        el.classList.add("selR");
+      }
+      updatePicked();
+    };
+
+    q.opts.forEach(opt => chipsL.appendChild(makeChip(opt,"L",onPick)));
+    q.opts.forEach(opt => chipsR.appendChild(makeChip(opt,"R",onPick)));
+
+    left.appendChild(chipsL);
+    right.appendChild(chipsR);
+
+    lr.appendChild(left);
+    lr.appendChild(right);
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const btn = document.createElement("button");
+    btn.className = "btn";
+    btn.textContent = "この1問を採点";
+    const res = document.createElement("span");
+    res.className = "result";
+
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = "解答・解説を見る";
+    const exp = document.createElement("div");
+    exp.className = "exp";
+    const expLines = q.exp.split("\n");
+    exp.innerHTML = `解説：${expLines[0].replace("解説：","")}<br>答：<code>${expLines[1].replace("答：","")}</code>`;
+    details.appendChild(summary);
+    details.appendChild(exp);
+
+    const grade = () => {
+      const ok = (pickedL === q.ans.L) && (pickedR === q.ans.R);
+      res.textContent = ok ? "正解" : "不正解";
+      res.classList.remove("ok","ng");
+      res.classList.add(ok ? "ok" : "ng");
+      details.open = true;
+      return ok;
+    };
+
+    btn.addEventListener("click", grade);
+
+    actions.appendChild(btn);
+    actions.appendChild(res);
+
+    card.appendChild(head);
+    card.appendChild(qtext);
+    card.appendChild(lr);
+    card.appendChild(picked);
+    card.appendChild(actions);
+    card.appendChild(details);
+
+    app.appendChild(card);
+
+    updatePicked();
+  });
+}
+
+function gradeAll(){
+  let ok = 0;
+  QUESTIONS.forEach(q => {
+    const card = app.querySelector(`.q[data-qid="${q.id}"]`);
+    const res = card.querySelector(".result");
+    const pickL = card.querySelector(".pickL").textContent;
+    const pickR = card.querySelector(".pickR").textContent;
+
+    const isOK = (pickL === q.ans.L) && (pickR === q.ans.R);
+    if (isOK) ok++;
+
+    res.textContent = isOK ? "正解" : "不正解";
+    res.classList.remove("ok","ng");
+    res.classList.add(isOK ? "ok" : "ng");
+  });
+
+  document.getElementById("score").textContent = ok;
+  document.getElementById("score2").textContent = ok;
+
+  if (ok === 15) blossom();
+}
+
+function blossom(){
+  burst.innerHTML = "";
+  const petals = ["🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","✨","🎉"];
+  const count = 36;
+  for(let i=0;i<count;i++){
+    const p = document.createElement("div");
+    p.className = "petal";
+    p.textContent = petals[Math.floor(Math.random()*petals.length)];
+    p.style.left = Math.random()*100 + "vw";
+    p.style.animationDuration = (3 + Math.random()*2.5) + "s";
+    p.style.fontSize = (14 + Math.random()*18) + "px";
+    p.style.transform = `translateY(-20vh) rotate(${Math.random()*180}deg)`;
+    burst.appendChild(p);
+  }
+  setTimeout(()=> burst.innerHTML="", 5200);
+}
+
+render();
+document.getElementById("gradeAll").addEventListener("click", gradeAll);
+document.getElementById("gradeAll2").addEventListener("click", gradeAll);
+</script>
+</body>
+</html>
