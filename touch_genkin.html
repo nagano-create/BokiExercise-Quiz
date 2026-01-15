@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3級仕訳 基礎0（現金のみ）</title>
+<style>
+body{
+  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+  background:#fafafa;
+  margin:20px;
+}
+h1{font-size:20px;margin-bottom:10px;}
+.q{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:12px;}
+.qtext{margin-bottom:10px;font-size:15px;}
+.area{display:flex;gap:10px;}
+.box{
+  flex:1;
+  border:2px dashed #bbb;
+  border-radius:10px;
+  min-height:50px;
+  padding:10px;
+  text-align:center;
+  font-weight:700;
+}
+.box span{display:inline-block;padding:6px 12px;border-radius:999px;background:#e0e7ff;}
+.btns{margin-top:10px;}
+button{
+  padding:6px 12px;
+  border-radius:8px;
+  border:1px solid #999;
+  background:#fff;
+  cursor:pointer;
+}
+.result{font-weight:700;margin-left:10px;}
+.ok{color:#1a7f37;}
+.ng{color:#b42318;}
+</style>
+</head>
+<body>
+
+<h1>3級仕訳 基礎0：現金のみ（左右タッチ）</h1>
+<p>※ 現金が <b>増える→左</b> ／ <b>減る→右</b></p>
+
+<div id="app"></div>
+
+<button onclick="gradeAll()">15問まとめて採点</button>
+<span id="score"></span>
+
+<script>
+const questions = [
+  "現金を受け取った。",
+  "現金を支払った。",
+  "売上代金として現金を受け取った。",
+  "代金を現金で支払った。",
+  "財布に現金が増えた。",
+  "現金が減った。",
+  "現金をもらった。",
+  "現金を渡した。",
+  "手元の現金が増加した。",
+  "手元の現金が減少した。",
+  "現金を引き出した。",
+  "現金を預け入れた。",
+  "現金で支払った。",
+  "現金で受け取った。",
+  "現金が手元に入った。"
+];
+
+// true = 左が正解（現金↑）
+const answers = [
+  true,false,true,false,true,false,true,false,true,false,true,false,false,true,true
+];
+
+const app = document.getElementById("app");
+
+questions.forEach((q,i)=>{
+  const div = document.createElement("div");
+  div.className="q";
+  div.innerHTML = `
+    <div class="qtext">【${i+1}】${q}</div>
+    <div class="area">
+      <div class="box left" onclick="select(${i},'L')">左</div>
+      <div class="box right" onclick="select(${i},'R')">右</div>
+    </div>
+    <div class="btns">
+      <button onclick="grade(${i})">判定</button>
+      <span class="result" id="res${i}"></span>
+    </div>
+  `;
+  app.appendChild(div);
+});
+
+const user = Array(15).fill(null);
+
+function select(i,side){
+  user[i]=side;
+  const q = app.children[i];
+  q.querySelector(".left").innerHTML = side==="L" ? "<span>現金</span>" : "左";
+  q.querySelector(".right").innerHTML = side==="R" ? "<span>現金</span>" : "右";
+}
+
+function grade(i){
+  const ok = (user[i]==="L") === answers[i];
+  const r = document.getElementById("res"+i);
+  r.textContent = ok ? "正解" : "不正解";
+  r.className = "result " + (ok?"ok":"ng");
+}
+
+function gradeAll(){
+  let score=0;
+  for(let i=0;i<15;i++){
+    if((user[i]==="L") === answers[i]) score++;
+    grade(i);
+  }
+  document.getElementById("score").textContent = `得点：${score} / 15`;
+}
+</script>
+
+</body>
+</html>
