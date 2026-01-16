@@ -1,110 +1,175 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>BokiExercise-Quiz｜問題セット選択</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BokiExercise 左右タッチ即判定クイズ（入口）</title>
 <style>
-  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --card:#171a21; }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif; }
-  #app { max-width: 720px; margin: 0 auto; padding: 16px; }
-  .card { background: var(--card); border:1px solid #222; border-radius: 14px; padding: 14px; margin: 12px 0; }
-  h1 { font-size: 18px; margin: 6px 0 6px; }
-  .muted { color: var(--muted); font-size: 13px; line-height: 1.5; }
-  label { font-size: 13px; color: var(--muted); display:block; margin-bottom: 8px; }
-  select { width:100%; padding: 10px 12px; border-radius: 10px; border:1px solid #2b2f3a; background:#0f1319; color:var(--fg); font-size: 15px; }
-  button { width:100%; margin-top: 10px; padding: 12px; border-radius: 12px; border:1px solid #2b2f3a; background:#1c222b; color:var(--fg); font-size: 15px; }
-  button:active { transform: scale(.99); }
-  .links a { color:#cdd3db; text-decoration: none; }
-  .links a:hover { text-decoration: underline; }
-  .pill { display:inline-block; padding:2px 10px; border:1px solid #2b2f3a; border-radius:999px; font-size: 12px; color: var(--muted); }
+  :root{
+    --bg:#0b0d12; --card:#121622; --card2:#0f131d; --fg:#e9edf7; --mut:#aab2c5;
+    --bd:#25304a; --accent:#7aa2ff; --ok:#1db954; --ng:#ff4d4f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:radial-gradient(1200px 800px at 20% -10%, rgba(122,162,255,.20), transparent 60%),
+                   radial-gradient(900px 700px at 110% 10%, rgba(29,185,84,.12), transparent 55%),
+                   var(--bg);
+    color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:22px 16px 28px;}
+  .hero{
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:18px 18px 14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  h1{margin:0 0 6px; font-size:20px;}
+  .sub{color:var(--mut); font-size:13px; line-height:1.6;}
+  .panel{
+    margin-top:14px;
+    background:rgba(18,22,34,.85);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:14px;
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  select{
+    flex:1;
+    min-width:240px;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.10);
+    background:#0e1320;
+    color:var(--fg);
+    font-size:14px;
+  }
+  button{
+    padding:10px 14px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.12);
+    background:linear-gradient(180deg, rgba(122,162,255,.18), rgba(122,162,255,.08));
+    color:var(--fg);
+    font-weight:700;
+    cursor:pointer;
+  }
+  button:hover{filter:brightness(1.05);}
+  .hint{margin-top:10px; color:var(--mut); font-size:12px; line-height:1.55;}
+  .grid{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;
+    padding:12px 14px;
+  }
+  .card h2{margin:0 0 6px; font-size:14px;}
+  .links{display:flex; flex-wrap:wrap; gap:10px;}
+  a{
+    color:var(--fg);
+    text-decoration:none;
+    padding:8px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(15,19,29,.6);
+    font-size:12px;
+  }
+  a:hover{border-color:rgba(122,162,255,.55);}
+  .warn{color:#ffd27a;}
+  .ok{color:#9cf2b9;}
+  .foot{margin-top:14px; color:var(--mut); font-size:11px; text-align:center;}
 </style>
 </head>
 <body>
-<div id="app">
+  <div class="wrap">
+    <div class="hero">
+      <h1>BokiExercise 左右タッチ即判定クイズ</h1>
+      <div class="sub">
+        使いたい「問題セット」を選んで開始 → 該当の <code>touch_****.html</code> を開きます。<br>
+        ※ 左右＝借方/貸方（モード切替あり）。満点で🌸演出。
+      </div>
 
-  <div class="card">
-    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
-    <div class="muted">
-      使いたい「問題セット」を選ぶと、そのままクイズ画面へ移動します。<br>
-      <span class="pill">左=借方 / 右=貸方</span>
+      <div class="panel">
+        <div class="row">
+          <label style="font-size:13px;color:var(--mut);white-space:nowrap;">問題セット：</label>
+          <select id="setSelect"></select>
+          <button id="goBtn">このセットで開始</button>
+        </div>
+        <div class="hint" id="statusMsg"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="card">
-    <label for="setSelect">問題セット：</label>
-    <select id="setSelect">
-      <option value="standard">3級仕訳標準</option>
-      <option value="genkin">3級仕訳基礎0.現金のみ</option>
-      <option value="shouhin">3級仕訳基礎1.商品取引</option>
-      <option value="kotei">3級仕訳基礎2.固定資産</option>
-      <option value="keika">3級仕訳基礎3.経過勘定</option>
-
-      <option value="zeikin">3級仕訳基礎4.税金・配当</option>
-      <option value="kyuryo">3級仕訳基礎5.給料・福利</option>
-      <option value="kashitsuke">3級仕訳基礎6.貸付・立替</option>
-      <option value="kariire">3級仕訳基礎7.借入・預り</option>
-      <option value="shohi">3級仕訳基礎8.諸費・雑費</option>
-      <option value="fudosan">3級仕訳基礎9.不動産</option>
-      <option value="shisan">3級仕訳基礎10.純資産</option>
-    </select>
-
-    <button id="goBtn">このセットで開始</button>
-
-    <div class="muted" style="margin-top:10px;">
-      ※ 選んだのに移動しない場合は、その touch_***.html がまだ未作成です。
+    <div class="grid">
+      <div class="card">
+        <h2>直リンク（確認用）</h2>
+        <div class="links" id="directLinks"></div>
+        <div class="hint">※ ファイルが無いものは「準備中」と表示されます。</div>
+      </div>
     </div>
-  </div>
 
-  <div class="card links">
-    <div class="muted">直リンク（確認用）：</div>
-    <div class="muted" style="line-height:1.9;margin-top:6px;">
-      <a href="touch_standard.html">touch_standard.html</a><br>
-      <a href="touch_genkin.html">touch_genkin.html</a><br>
-      <a href="touch_shouhin.html">touch_shouhin.html</a><br>
-      <a href="touch_kotei.html">touch_kotei.html</a><br>
-      <a href="touch_keika.html">touch_keika.html</a><br>
-      <span class="muted">（4以降は作成後に自動で開けます）</span>
-    </div>
+    <div class="foot">© BokiExercise｜入口ページ（index.html）</div>
   </div>
-
-</div>
 
 <script>
-const pages = {
-  standard: "touch_standard.html",
-  genkin: "touch_genkin.html",
-  shouhin: "touch_shouhin.html",
-  kotei: "touch_kotei.html",
-  keika: "touch_keika.html",
+  // ▼ ここが “セット → ファイル” の対応表（増やす場所）
+  const sets = [
+    {key:"standard", label:"3級仕訳標準", file:"touch_standard.html"},
+    {key:"genkin",   label:"3級仕訳基礎0.現金のみ", file:"touch_genkin.html"},
+    {key:"shouhin",  label:"3級仕訳基礎1.商品取引", file:"touch_shouhin.html"},
+    {key:"kotei",    label:"3級仕訳基礎2.固定資産", file:"touch_kotei.html"},
+    {key:"keika",    label:"3級仕訳基礎3.経過勘定", file:"touch_keika.html"},
+    {key:"zeikin",   label:"3級仕訳基礎4.税金・配当", file:"touch_zeikin.html"},
+    {key:"kyuryo",   label:"3級仕訳基礎5.給料・福利", file:"touch_kyuryo.html"},
+    {key:"kashitsuke",label:"3級仕訳基礎6.貸付・立替", file:"touch_kashitsuke.html"},
+    {key:"kariire",  label:"3級仕訳基礎7.借入・預り", file:"touch_kariire.html"},
+    {key:"shohi",    label:"3級仕訳基礎8.諸費・雑費", file:"touch_shohi.html"},
+    {key:"fudosan",  label:"3級仕訳基礎9.不動産", file:"touch_fudosan.html"},
+    {key:"shisan",   label:"3級仕訳基礎10.純資産", file:"touch_shisan.html"},
+  ];
 
-  zeikin: "touch_zeikin.html",
-  kyuryo: "touch_kyuryo.html",
-  kashitsuke: "touch_kashitsuke.html",
-  kariire: "touch_kariire.html",
-  shohi: "touch_shohi.html",
-  fudosan: "touch_fudosan.html",
-  shisan: "touch_shisan.html",
-};
+  const sel = document.getElementById("setSelect");
+  const statusMsg = document.getElementById("statusMsg");
+  const links = document.getElementById("directLinks");
 
-const setSelect = document.getElementById("setSelect");
-const goBtn = document.getElementById("goBtn");
+  // プルダウン生成
+  sets.forEach(s=>{
+    const o=document.createElement("option");
+    o.value=s.key; o.textContent=s.label;
+    sel.appendChild(o);
+  });
 
-function go(){
-  const key = setSelect.value;
-  const url = pages[key];
-  if(!url){
-    alert("対応ファイルが見つかりません。");
-    return;
+  // 直リンク生成
+  sets.forEach(s=>{
+    const a=document.createElement("a");
+    a.href = s.file;
+    a.textContent = s.file;
+    a.target="_self";
+    links.appendChild(a);
+  });
+
+  function setStatus(text, cls){
+    statusMsg.className = "hint " + (cls||"");
+    statusMsg.innerHTML = text;
   }
-  location.href = url;
-}
 
-setSelect.addEventListener("change", go);
-goBtn.addEventListener("click", go);
+  // “存在チェック”はGitHub Pagesでは厳密にはできないので、説明だけ出す
+  setStatus(
+    `※ 4以降が開けない場合は <span class="warn">touch_****.html が未作成</span>です。<br>
+     その場合：リポジトリにファイルを追加 → Pages更新後に開けます。`,
+    ""
+  );
+
+  document.getElementById("goBtn").addEventListener("click", ()=>{
+    const key = sel.value;
+    const s = sets.find(x=>x.key===key);
+    if(!s) return;
+    location.href = s.file;
+  });
 </script>
 </body>
 </html>
