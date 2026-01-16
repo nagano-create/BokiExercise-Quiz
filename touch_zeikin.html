@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3級仕訳 基礎4：税金・配当・決済</title>
+<style>
+body{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Meiryo",sans-serif;background:#fafafa;margin:16px}
+h1{font-size:20px}
+select,button{font-size:16px;padding:8px;margin:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border:1px solid #ccc;border-radius:12px;padding:12px;background:#fff}
+.q{margin:14px 0}
+.ok{color:#1a7f37;font-weight:700}
+.ng{color:#b42318;font-weight:700}
+</style>
+</head>
+<body>
+
+<h1>3級仕訳 基礎4：税金・配当・決済</h1>
+<p>左右をタッチして仕訳を完成させてください（15問）</p>
+
+<div id="app"></div>
+<p><button onclick="gradeAll()">まとめて採点</button>　
+<span id="score"></span></p>
+
+<script>
+const choices = [
+  "", "現金", "仮払消費税", "仮受消費税", "未払消費税",
+  "法人税等", "仮払法人税", "未払法人税等",
+  "租税公課", "未払配当金", "受取商品券"
+];
+
+const quiz = [
+ {q:"消費税を含めて商品を販売し、代金は現金で受け取った。",
+  L:["現金","仮受消費税"], R:["売上"]},
+
+ {q:"消費税を含めて商品を仕入れ、代金は現金で支払った。",
+  L:["仕入","仮払消費税"], R:["現金"]},
+
+ {q:"仮受消費税と仮払消費税を相殺し、未払消費税を計上した。",
+  L:["仮受消費税"], R:["仮払消費税","未払消費税"]},
+
+ {q:"法人税等を計上した。",
+  L:["法人税等"], R:["未払法人税等"]},
+
+ {q:"法人税を仮払した。",
+  L:["仮払法人税"], R:["現金"]},
+
+ {q:"未払法人税等を現金で支払った。",
+  L:["未払法人税等"], R:["現金"]},
+
+ {q:"固定資産税を現金で支払った。",
+  L:["租税公課"], R:["現金"]},
+
+ {q:"株主への配当金を後日支払うことにした。",
+  L:["繰越利益剰余金"], R:["未払配当金"]},
+
+ {q:"未払配当金を現金で支払った。",
+  L:["未払配当金"], R:["現金"]},
+
+ {q:"商品券で売上代金を受け取った。",
+  L:["受取商品券"], R:["売上"]},
+
+ {q:"受け取っていた商品券を現金に換えた。",
+  L:["現金"], R:["受取商品券"]},
+
+ {q:"消費税を含めた水道光熱費を現金で支払った。",
+  L:["水道光熱費","仮払消費税"], R:["現金"]},
+
+ {q:"消費税の納付額を未払消費税として計上した。",
+  L:["仮受消費税"], R:["仮払消費税","未払消費税"]},
+
+ {q:"未払消費税を現金で納付した。",
+  L:["未払消費税"], R:["現金"]},
+
+ {q:"法人税等を現金で支払った。",
+  L:["未払法人税等"], R:["現金"]}
+];
+
+const app=document.getElementById("app");
+
+quiz.forEach((q,i)=>{
+ const d=document.createElement("div");
+ d.className="q box";
+ d.innerHTML=`<b>Q${i+1}</b> ${q.q}<br>
+ <div class="grid">
+ <div>左：<select>${choices.map(c=>`<option>${c}</option>`).join("")}</select></div>
+ <div>右：<select>${choices.map(c=>`<option>${c}</option>`).join("")}</select></div>
+ </div>
+ <div class="res"></div>`;
+ app.appendChild(d);
+});
+
+function gradeAll(){
+ let ok=0;
+ document.querySelectorAll(".q").forEach((q,i)=>{
+  const sel=q.querySelectorAll("select");
+  const L=sel[0].value,R=sel[1].value;
+  const ans=quiz[i];
+  const good=ans.L.includes(L)&&ans.R.includes(R);
+  q.querySelector(".res").innerHTML=
+   good?"<span class='ok'>正解</span>":"<span class='ng'>不正解</span>";
+  if(good) ok++;
+ });
+ document.getElementById("score").textContent=`${ok} / 15`;
+}
+</script>
+
+</body>
+</html>
