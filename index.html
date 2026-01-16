@@ -144,13 +144,16 @@
   });
 
   // 直リンク生成
-  sets.forEach(s=>{
-    const a=document.createElement("a");
-    a.href = s.file;
-    a.textContent = s.file;
-    a.target="_self";
-    links.appendChild(a);
-  });
+ sets.forEach(s=>{
+  const a=document.createElement("a");
+  a.href = s.file;
+  // 表示だけ日本語（ファイル名は見せない）
+  a.textContent = s.label;
+  a.title = s.file; // どうしても見たいとき用（マウスで出る）
+  a.target="_self";
+  links.appendChild(a);
+});
+
 
   function setStatus(text, cls){
     statusMsg.className = "hint " + (cls||"");
