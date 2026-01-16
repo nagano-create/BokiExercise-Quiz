@@ -66,11 +66,24 @@
   .growth-emoji { font-size: 120px; line-height: 1.1; }
   .growth-box { text-align:center; margin-bottom:12px; }
   textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
+/* ▼ indexへ戻る（左上） */
+.back-link{
+  font-size:12px;
+  color: var(--muted);
+  text-decoration:none;
+  border:1px solid #2b2f3a;
+  padding:4px 10px;
+  border-radius:999px;
+  display:inline-block;
+}
+.back-link:active{ opacity:.7; }
+
 </style>
 </head>
 <body>
 <div id="app">
   <header>
+    <a href="index.html" class="back-link">入口へ戻る</a>
     <h1>BokiExercise 左右タッチ即判定クイズ（標準）</h1>
     <div class="pill">左=借方 / 右=貸方</div>
   </header>
