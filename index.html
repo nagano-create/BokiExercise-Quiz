@@ -1,233 +1,375 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BokiExercise 左右タッチ即判定クイズ</title>
+  <meta name="theme-color" content="#0b0f1a" />
   <style>
     :root{
-      --bg:#0b0e14;
-      --panel:#121827;
-      --panel2:#0f1523;
-      --bd:#22304a;
-      --fg:#e9eefb;
-      --mut:#a7b3cc;
-      --accent:#7aa2ff;
+      --bg0:#070A12;
+      --bg1:#0b1020;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.10);
+      --bd: rgba(255,255,255,.14);
+      --txt:#e9ecf6;
+      --mut:#a7b0c0;
+      --accent:#7c5cff;
+      --accent2:#19d3ff;
       --ok:#1db954;
-      --warn:#ffd166;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 16px;
+      --warn:#ffcc66;
+      --shadow: 0 20px 80px rgba(0,0,0,.45);
     }
+
     *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      background: radial-gradient(1200px 600px at 20% -10%, rgba(122,162,255,.18), transparent 60%),
-                  radial-gradient(900px 500px at 120% 10%, rgba(29,185,84,.12), transparent 55%),
-                  var(--bg);
-      color:var(--fg);
-      font-family: system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
-      min-height:100vh;
+      font-family: system-ui,-apple-system,"Segoe UI","Noto Sans JP","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+      color:var(--txt);
+      background:
+        radial-gradient(1200px 800px at 15% 20%, rgba(124,92,255,.25), transparent 60%),
+        radial-gradient(900px 700px at 85% 30%, rgba(25,211,255,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+
+    .wrap{
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 28px 18px 24px;
+      min-height: 100%;
+      display:flex;
+      flex-direction:column;
+      gap: 16px;
+    }
+
+    .hero{
+      border: 1px solid var(--bd);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border-radius: 18px;
+      padding: 22px 18px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow:hidden;
+    }
+    .hero:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: radial-gradient(700px 240px at 20% 0%, rgba(124,92,255,.35), transparent 60%);
+      pointer-events:none;
+      filter: blur(12px);
+      opacity:.9;
+    }
+    .heroInner{ position:relative; }
+
+    .title{
+      margin: 0 0 6px;
+      font-size: clamp(20px, 3.2vw, 28px);
+      letter-spacing: .2px;
       display:flex;
       align-items:center;
-      justify-content:center;
-      padding:22px;
+      gap:10px;
+      font-weight: 850;
     }
-    .wrap{
-      width:min(720px, 100%);
-    }
-    .card{
-      background: linear-gradient(180deg, rgba(18,24,39,.92), rgba(15,21,35,.92));
-      border:1px solid rgba(34,48,74,.9);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 20px 18px 16px;
-      backdrop-filter: blur(6px);
-    }
-    h1{
-      margin:0 0 6px;
-      font-size: 20px;
-      letter-spacing:.2px;
+    .badge{
+      font-size:12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      color: var(--mut);
+      white-space: nowrap;
     }
     .lead{
-      margin:0 0 12px;
-      color:var(--mut);
-      line-height:1.6;
-      font-size:13.5px;
+      margin: 6px 0 0;
+      color: var(--mut);
+      line-height: 1.65;
+      font-size: 14px;
     }
-    .note{
-      margin:10px 0 14px;
-      color:var(--mut);
-      font-size:12px;
+    .lead strong{ color: var(--txt); font-weight: 800; }
+
+    .card{
+      border: 1px solid var(--bd);
+      background: var(--card);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 12px 50px rgba(0,0,0,.35);
     }
-    .note b{ color:var(--fg); font-weight:700; }
+
     .row{
+      display:flex;
+      gap: 12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--mut);
+      margin-bottom: 8px;
+    }
+
+    select{
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(10,14,24,.6);
+      color: var(--txt);
+      outline: none;
+      font-size: 15px;
+    }
+    select:focus{
+      border-color: rgba(124,92,255,.55);
+      box-shadow: 0 0 0 3px rgba(124,92,255,.18);
+    }
+
+    .btn{
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(25,211,255,.85));
+      color: #08101e;
+      font-weight: 900;
+      font-size: 15px;
+      cursor:pointer;
+      transition: transform .06s ease, filter .2s ease;
+      user-select:none;
+    }
+    .btn:active{ transform: scale(.99); }
+    .btn:disabled{
+      filter: grayscale(1) brightness(.8);
+      cursor:not-allowed;
+    }
+
+    .note{
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--mut);
+      line-height: 1.6;
+    }
+
+    .status{
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--mut);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .dot{
+      width: 10px; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.22);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.05);
+    }
+    .dot.ok{ background: rgba(29,185,84,.95); box-shadow: 0 0 0 3px rgba(29,185,84,.18); }
+    .dot.warn{ background: rgba(255,204,102,.98); box-shadow: 0 0 0 3px rgba(255,204,102,.16); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media(min-width:720px){
+      .grid{ grid-template-columns: 1.2fr .8fr; }
+    }
+
+    footer{
+      margin-top: auto;
+      text-align:center;
+      color: var(--mut);
+      font-size: 12px;
+      padding: 12px 0 2px;
+    }
+    footer a{
+      color: var(--mut);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(255,255,255,.25);
+    }
+    footer a:hover{ color: var(--txt); }
+
+    .mini{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      align-items:center;
-      margin-top:10px;
+      margin-top: 10px;
     }
-    label{
-      font-size:13px;
-      color:var(--mut);
-      white-space:nowrap;
+    .chip{
+      font-size: 12px;
+      color: var(--mut);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.16);
     }
-    select{
-      flex:1;
-      min-width: 240px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border:1px solid rgba(34,48,74,.95);
-      background: rgba(11,14,20,.65);
-      color: var(--fg);
-      outline:none;
-    }
-    select:focus{ border-color: rgba(122,162,255,.9); box-shadow: 0 0 0 3px rgba(122,162,255,.18); }
-    button{
-      padding: 10px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(34,48,74,.95);
-      background: linear-gradient(180deg, rgba(122,162,255,.18), rgba(122,162,255,.10));
-      color: var(--fg);
-      cursor:pointer;
-      font-weight:700;
-      letter-spacing:.2px;
-    }
-    button:hover{ filter: brightness(1.06); }
-    button:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-      filter:none;
-    }
-    .status{
-      margin-top:10px;
-      font-size:12px;
-      color:var(--mut);
-      min-height: 1.4em;
-    }
-    .status .ok{ color: var(--ok); font-weight:700; }
-    .status .warn{ color: var(--warn); font-weight:700; }
-    footer{
-      margin-top:12px;
-      text-align:center;
-      font-size:12px;
-      color:var(--mut);
-    }
-    footer a{ color: var(--mut); text-decoration: none; border-bottom: 1px dotted rgba(167,179,204,.55); }
-    footer a:hover{ color: var(--fg); border-bottom-color: rgba(233,238,251,.8); }
+    .chip strong{ color: var(--txt); }
+
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h1>BokiExercise 左右タッチ即判定クイズ</h1>
-      <p class="lead">「問題セット」を選んで開始</p>
-      <p class="note">※ <b>左右＝借方/貸方</b>。満点で🌸演出。</p>
+    <section class="hero">
+      <div class="heroInner">
+        <div class="title">
+          BokiExercise 左右タッチ即判定クイズ
+          <span class="badge">入口</span>
+        </div>
+        <p class="lead">
+          <strong>「問題セット」</strong>を選んで開始。<br>
+          ※ 左右＝借方/貸方。満点で🌸演出。
+        </p>
 
-      <div class="row">
-        <label for="setSelect">問題セット：</label>
-        <select id="setSelect"></select>
-        <button id="startBtn" disabled>開始</button>
+        <div class="mini">
+          <div class="chip">操作：<strong>タップ</strong>で左右判定</div>
+          <div class="chip">PC：<strong>Space=左 / Enter=右</strong></div>
+          <div class="chip">目的：<strong>反射で仕訳方向</strong></div>
+        </div>
       </div>
+    </section>
 
-      <div class="status" id="status"></div>
+    <section class="card">
+      <div class="grid">
+        <div>
+          <label for="setSelect">問題セット：</label>
+          <select id="setSelect"></select>
 
-      <p class="note">※ 準備ができていないものは「準備中」と表示されます。</p>
-    </div>
+          <div class="status" id="statusLine">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">読み込み中…</span>
+          </div>
 
-    <footer>© BokiExercise｜<a href="./" aria-label="homepage">homepage</a></footer>
+          <div class="note">
+            ※ 準備ができていないものは「準備中」と表示されます。
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; justify-content:flex-start;">
+          <label>&nbsp;</label>
+          <button class="btn" id="startBtn" disabled>開始</button>
+          <div class="note">
+            うまく開かない場合は、少し待ってから再読込（スマホはタブを閉じて再起動）をお試しください。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      © BokiExercise｜<a href="./" aria-label="homepage">homepage</a>
+    </footer>
   </div>
 
 <script>
 /**
- * 入口(index.html)は「選択→開始」だけ。
- * それぞれのセットは別ファイル(touch_*.html)に遷移。
- * 未作成ファイルは fetch で確認し「準備中」表示＋開始不可。
+ * 入口（index.html）
+ * - 直リンク一覧は出さない（プルダウン＋開始のみ）
+ * - ファイルが無い場合は「準備中」表示
+ * - 存在確認は HEAD で行う（GitHub Pagesで動きます）
  */
+
 const sets = [
-  { key:"standard", label:"3級仕訳標準", file:"touch_standard.html" },
-  { key:"genkin",   label:"3級仕訳基礎0.現金のみ", file:"touch_genkin.html" },
-  { key:"shouhin",  label:"3級仕訳基礎1.商品取引", file:"touch_shouhin.html" },
-  { key:"kotei",    label:"3級仕訳基礎2.固定資産", file:"touch_kotei.html" },
-  { key:"keika",    label:"3級仕訳基礎3.経過勘定", file:"touch_keika.html" },
-  { key:"zeikin",   label:"3級仕訳基礎4.税金・配当", file:"touch_zeikin.html" },
-  { key:"kyuryo",   label:"3級仕訳基礎5.給料・福利", file:"touch_kyuryo.html" },
-  { key:"kashitsuke", label:"3級仕訳基礎6.貸付・立替", file:"touch_kashitsuke.html" },
-  { key:"kariire",  label:"3級仕訳基礎7.借入・預り", file:"touch_kariire.html" },
-  { key:"shohi",    label:"3級仕訳基礎8.諸費・雑費", file:"touch_shohi.html" },
-  { key:"fudosan",  label:"3級仕訳基礎9.不動産", file:"touch_fudosan.html" },
-  { key:"shisan",   label:"3級仕訳基礎10.純資産", file:"touch_shisan.html" },
+  { key:"standard",  label:"3級仕訳標準",               file:"touch_standard.html" },
+  { key:"genkin",    label:"3級仕訳基礎0.現金のみ",     file:"touch_genkin.html" },
+  { key:"shouhin",   label:"3級仕訳基礎1.商品取引",     file:"touch_shouhin.html" },
+  { key:"kotei",     label:"3級仕訳基礎2.固定資産",     file:"touch_kotei.html" },
+  { key:"keika",     label:"3級仕訳基礎3.経過勘定",     file:"touch_keika.html" },
+
+  // ここから先は、ファイルを作ったら自動で準備中が外れます
+  { key:"zeikin",    label:"3級仕訳基礎4.税金・配当",   file:"touch_zeikin.html" },
+  { key:"kyuryo",    label:"3級仕訳基礎5.給料・福利",   file:"touch_kyuryo.html" },
+  { key:"kashitsuke",label:"3級仕訳基礎6.貸付・立替",   file:"touch_kashitsuke.html" },
+  { key:"kariire",   label:"3級仕訳基礎7.借入・預り",   file:"touch_kariire.html" },
+  { key:"shohi",     label:"3級仕訳基礎8.諸費・雑費",   file:"touch_shohi.html" },
+  { key:"fudosan",   label:"3級仕訳基礎9.不動産",       file:"touch_fudosan.html" },
+  { key:"shisan",    label:"3級仕訳基礎10.純資産",      file:"touch_shisan.html" },
 ];
 
-const elSel = document.getElementById("setSelect");
-const elBtn = document.getElementById("startBtn");
-const elStatus = document.getElementById("status");
+const sel = document.getElementById("setSelect");
+const btn = document.getElementById("startBtn");
+const dot = document.getElementById("statusDot");
+const statusText = document.getElementById("statusText");
 
-function setStatus(html){ elStatus.innerHTML = html || ""; }
+// key -> available boolean
+const availability = Object.create(null);
 
-async function exists(url){
-  // GitHub Pages 同一オリジンならOK
+function setStatus(kind, text){
+  dot.classList.remove("ok","warn");
+  if(kind === "ok") dot.classList.add("ok");
+  if(kind === "warn") dot.classList.add("warn");
+  statusText.textContent = text;
+}
+
+async function headExists(path){
   try{
-    const r = await fetch(url, { method:"GET", cache:"no-store" });
-    return r.ok;
+    const res = await fetch(path, { method:"HEAD", cache:"no-store" });
+    return res.ok;
   }catch(e){
     return false;
   }
 }
 
-function renderOptions(availability){
-  elSel.innerHTML = "";
+function renderOptions(){
+  sel.innerHTML = "";
   sets.forEach(s=>{
-    const ok = availability.get(s.file) === true;
     const opt = document.createElement("option");
-    opt.value = s.file;
-    opt.dataset.ready = ok ? "1" : "0";
+    const ok = availability[s.key] === true;
+    opt.value = s.key;
     opt.textContent = ok ? s.label : `${s.label}（準備中）`;
-    elSel.appendChild(opt);
+    opt.disabled = !ok;
+    sel.appendChild(opt);
   });
-}
 
-function updateButtonState(){
-  const opt = elSel.selectedOptions[0];
-  const ready = opt && opt.dataset.ready === "1";
-  elBtn.disabled = !ready;
-  if (!opt){
-    setStatus("");
-    return;
-  }
-  if (ready){
-    setStatus(`<span class="ok">準備OK</span>：開始できます。`);
+  // 選べる最初のものに合わせる
+  const firstEnabled = [...sel.options].find(o => !o.disabled);
+  if(firstEnabled){
+    sel.value = firstEnabled.value;
+    btn.disabled = false;
+    const set = sets.find(x=>x.key===sel.value);
+    setStatus("ok", `選択中：${set.label}`);
   }else{
-    setStatus(`<span class="warn">準備中</span>：このセットはまだ作成されていません。`);
+    btn.disabled = true;
+    setStatus("warn", "利用可能なセットが見つかりません");
   }
 }
 
-(async function init(){
-  setStatus("準備状況を確認中…");
+async function init(){
+  setStatus("", "読み込み中…");
+  btn.disabled = true;
 
-  // まとめて存在確認（並列）
-  const availability = new Map();
-  await Promise.all(sets.map(async s=>{
-    const ok = await exists(s.file);
-    availability.set(s.file, ok);
+  // まず standard は必ずある想定（無いと入口として困る）
+  // ただし念のため存在チェック
+  const checks = await Promise.all(sets.map(async s=>{
+    const ok = await headExists(s.file);
+    availability[s.key] = ok;
+    return ok;
   }));
 
-  renderOptions(availability);
+  renderOptions();
 
-  // 既定：standard を選ぶ（なければ先頭）
-  const idx = sets.findIndex(s=>s.key==="standard");
-  elSel.selectedIndex = (idx >= 0) ? idx : 0;
+  // ネットワーク事情でHEADが失敗することがあるので、standardが無い判定でも
+  // クリック時に実際に飛べる可能性を残す（ただしUIは準備中になる）
+  if(!checks.some(Boolean)){
+    setStatus("warn","通信状態により確認できませんでした（再読込を試してください）");
+  }
+}
 
-  updateButtonState();
-})();
-
-elSel.addEventListener("change", updateButtonState);
-
-elBtn.addEventListener("click", ()=>{
-  const opt = elSel.selectedOptions[0];
-  if (!opt || opt.dataset.ready !== "1") return;
-  location.href = opt.value;
+sel.addEventListener("change", ()=>{
+  const set = sets.find(x=>x.key===sel.value);
+  if(!set) return;
+  btn.disabled = false;
+  setStatus("ok", `選択中：${set.label}`);
 });
+
+btn.addEventListener("click", ()=>{
+  const set = sets.find(x=>x.key===sel.value);
+  if(!set) return;
+  // 同一タブで遷移（授業用に迷子になりにくい）
+  location.href = set.file;
+});
+
+init();
 </script>
 </body>
 </html>
