@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>3級仕訳標準｜左右タッチ即判定</title>
+<title>BokiExercise 左右タッチ即判定クイズ（標準）</title>
 <style>
   :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif; }
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
+    "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
   #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
-  header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; border-bottom:1px solid #222; }
+
+  header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
   header h1 { font-size: 16px; margin: 0; flex:1; }
-  header a { color:#cdd3db; text-decoration:none; font-size: 13px; border:1px solid #2b2f3a; padding:6px 10px; border-radius: 10px; }
-  header a:hover { text-decoration: underline; }
-  header .meta { font-size:12px; color: var(--muted); }
+  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
 
   #questionBox {
     padding: 18px 16px;
@@ -25,25 +25,30 @@
     overflow-y:auto;
     max-height: 40vh;
   }
-  #question { margin: 6px 0 4px; font-weight: 700; text-align: center; }
+  #question { margin: 6px 0 4px; font-weight: 600; text-align: center; }
   #sub { font-size: 12px; color: var(--muted); }
 
   #arena { flex:1; display:flex; }
-  .side { flex:1; display:flex; align-items:center; justify-content:center; font-size: clamp(28px, 8vw, 44px); font-weight:800;
-          border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent; }
-  .left { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
-  .right{ background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .side {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(28px, 8vw, 44px); font-weight:700;
+    border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .left  { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .right { background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
   .label { pointer-events: none; opacity:.9; }
 
   #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
 
-  #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); border-top:1px solid #222; }
-  button { flex:1; padding: 12px; border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg); border-radius:10px; font-size:14px; }
+  #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
+  button {
+    flex:1; padding: 12px; border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
+    border-radius:10px; font-size:14px; cursor:pointer;
+  }
   button:active { transform: scale(.98); }
 
   #flash {
-    position: fixed; inset: 0; display:none;
-    align-items:center; justify-content:center;
+    position: fixed; inset: 0; display:none; align-items:center; justify-content:center;
     font-size: clamp(56px, 18vw, 120px);
     font-weight:900; z-index: 10;
   }
@@ -51,13 +56,8 @@
   #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
 
   #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
-  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
 
-  details { background: var(--card); margin: 0 16px 12px; padding: 10px 12px; border-radius: 10px; border:1px solid #222; }
-  summary { cursor: pointer; font-weight: 700; }
-  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
-
-  .result-item { font-size:14px; margin-bottom:8px; }
+  .result-item { font-size:14px; margin-bottom:8px; text-align:left; }
   .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
   .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
   .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
@@ -65,14 +65,14 @@
 
   .growth-emoji { font-size: 120px; line-height: 1.1; }
   .growth-box { text-align:center; margin-bottom:12px; }
+  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <a href="index.html">← メニュー</a>
-    <h1>3級仕訳標準（15問）</h1>
-    <div class="meta"><span class="pill" id="modePill">左=借方 / 右=貸方</span></div>
+    <h1>BokiExercise 左右タッチ即判定クイズ（標準）</h1>
+    <div class="pill">左=借方 / 右=貸方</div>
   </header>
 
   <div id="questionBox">
@@ -81,45 +81,30 @@
   </div>
 
   <div id="arena">
-    <div class="side left" id="leftSide" role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
+    <div class="side left"  id="leftSide"  role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
     <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
   </div>
 
   <div id="scoreBar">
-    <div>問 <span id="idx">0</span>/<span id="total">15</span></div>
+    <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
     <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
   </div>
 
   <div id="controls">
     <button id="btnStart">スタート / シャッフル</button>
-    <button id="btnToggle">モード切替</button>
     <button id="btnReset">リセット</button>
   </div>
 
-  <details>
-    <summary>🔧 問題を差し替える（CSV/TSV貼り付け）</summary>
-    <p style="font-size:13px;color:#cdd3db;margin:6px 0 8px;">
-      1行に「問題文, 正解サイド(left|right)」の形式で貼り付けてください。TSVでもOK。<br>
-      例：<code>現金を増やす仕訳は？,left</code> / <code>売上は？,right</code>
-    </p>
-    <textarea id="importText" placeholder="例）&#10;現金を増やす仕訳は？,left&#10;売上は？,right"></textarea>
-    <div style="display:flex; gap:8px; margin-top:8px;">
-      <button id="btnPreview" style="flex:1;">プレビュー</button>
-      <button id="btnApply" style="flex:1;">適用</button>
-    </div>
-    <p id="importer" style="font-size:12px; color:#9aa0a6; margin-top:6px; display:none;"></p>
-  </details>
-
-  <div id="footerNote">© BokiExercise｜画面の左右どちらかをタップして即判定</div>
+  <div id="footerNote">© BokiExercise</div>
 </div>
 
 <div id="flash"></div>
 
 <script>
 // =======================
-// ▼ 標準15問 ▼
+// ▼ 3級仕訳標準（15問） ▼
 // =======================
-const questionsDefault = [
+const set_standard = [
   { q: "資産（現金・売掛金など）が『増加』するのは？", correct: "left" },
   { q: "資産（現金・売掛金など）が『減少』するのは？", correct: "right" },
   { q: "負債（買掛金・借入金など）が『増加』するのは？", correct: "right" },
@@ -137,12 +122,8 @@ const questionsDefault = [
   { q: "前受金が発生したときの『前受金』は？", correct: "right" }
 ];
 
-// =======================
-// ▼ 共通ロジック ▼
-// =======================
-let questions = JSON.parse(JSON.stringify(questionsDefault));
+let questions = JSON.parse(JSON.stringify(set_standard));
 let idx = 0, ok = 0, ng = 0, streak = 0;
-let mode = 'debitLeft'; // 'debitLeft' or 'swap'
 let results = [];
 
 const elQ = document.getElementById('question');
@@ -153,7 +134,6 @@ const elOk = document.getElementById('ok');
 const elNg = document.getElementById('ng');
 const elStreak = document.getElementById('streak');
 const flash = document.getElementById('flash');
-const modePill = document.getElementById('modePill');
 const questionBox = document.getElementById('questionBox');
 
 elTotal.textContent = questions.length;
@@ -183,11 +163,12 @@ function next(){
   const item = questions[idx];
   elQ.textContent = item.q;
   elIdx.textContent = idx+1;
-  elSub.textContent = (mode==='debitLeft') ? '左=借方 / 右=貸方' : '左=貸方 / 右=借方';
+  elSub.textContent = '左=借方 / 右=貸方';
 }
 
 function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
 
+// 簡易ビープ（初回ユーザー操作後のみ作動）
 let audioCtx = null;
 function beep(okFlag=true){
   try{
@@ -200,22 +181,19 @@ function beep(okFlag=true){
     o.connect(g); g.connect(audioCtx.destination);
     o.start();
     setTimeout(()=>{ o.stop(); }, 120);
-  }catch(e){}
+  }catch(e){ /* ignore */ }
 }
 
 function judge(side){
   if (idx >= questions.length) return;
   const item = questions[idx];
-  let effectiveCorrect = item.correct;
-  if (mode === 'swap') effectiveCorrect = (effectiveCorrect==='left'?'right':'left');
-  const isOK = (side === effectiveCorrect);
+  const isOK = (side === item.correct);
 
   results.push({
     no: idx+1,
     question: item.q,
     answered: side,
-    correct: effectiveCorrect,
-    baseCorrect: item.correct,
+    correct: item.correct,
     isOK: isOK
   });
 
@@ -266,14 +244,14 @@ function showResults(){
 
   let html = "";
   html += growthHtml;
-  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:700;">結果一覧</div>`;
-  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}（${percent}%）</div>`;
+  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
+  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
 
   results.forEach(r => {
     const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
     const badgeLabel = r.isOK ? '○' : '×';
     const answeredJp = r.answered === 'left' ? '左' : '右';
-    const correctJp = r.correct === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
 
     html += `<div class="result-item">
       <span class="badge ${badgeClass}">${badgeLabel}</span>
@@ -282,83 +260,34 @@ function showResults(){
     </div>`;
   });
 
+  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
+
   let textReport = "No,問題文,あなたの答え,正解,正誤\n";
   results.forEach(r => {
     const answeredJp = r.answered === 'left' ? '左' : '右';
-    const correctJp = r.correct === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
     const status = r.isOK ? "正解" : "不正解";
     const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
     textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
   });
 
-  html += `<div style="margin-top:12px;">
+  html += `<div style="margin-top:10px;">
     <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
     <textarea readonly onclick="this.select()">${textReport}</textarea>
   </div>`;
 
   questionBox.innerHTML = html;
   elIdx.textContent = total;
-  elSub.textContent = 'お疲れさまでした。';
+  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
 }
 
+// UI操作
 document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
 document.getElementById('btnStart').addEventListener('click', start);
-document.getElementById('btnReset').addEventListener('click', ()=>window.location.reload());
+document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
 
-document.getElementById('btnToggle').addEventListener('click', ()=>{
-  mode = (mode==='debitLeft') ? 'swap' : 'debitLeft';
-  modePill.textContent = (mode==='debitLeft') ? '左=借方 / 右=貸方' : '左=貸方 / 右=借方（反転）';
-  elSub.textContent = (mode==='debitLeft') ? '左=借方 / 右=貸方' : '左=貸方 / 右=借方';
-});
-
-const importText = document.getElementById('importText');
-const importerMsg = document.getElementById('importer');
-
-document.getElementById('btnPreview').addEventListener('click', ()=>{
-  try{
-    const parsed = parseQA(importText.value);
-    importerMsg.style.display='block';
-    importerMsg.textContent = `読み込み候補：${parsed.length} 問`;
-  }catch(e){
-    importerMsg.style.display='block';
-    importerMsg.textContent = 'エラー：' + e.message;
-  }
-});
-
-document.getElementById('btnApply').addEventListener('click', ()=>{
-  try{
-    const parsed = parseQA(importText.value);
-    questions = parsed;
-    importerMsg.style.display='block';
-    importerMsg.textContent = `適用しました：${parsed.length} 問`;
-    idx = 0; ok = 0; ng = 0; streak = 0; results = [];
-    elIdx.textContent = 0;
-    elTotal.textContent = questions.length;
-    elOk.textContent = 0; elNg.textContent = 0; elStreak.textContent = 0;
-    elQ.textContent = 'スタートを押してください';
-    elSub.textContent = '左=借方 / 右=貸方';
-  }catch(e){
-    importerMsg.style.display='block';
-    importerMsg.textContent = 'エラー：' + e.message;
-  }
-});
-
-function parseQA(text){
-  const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const out = [];
-  for(const line of lines){
-    const parts = line.split(/[\t,]/).map(s=>s.trim());
-    if (parts.length < 2) throw new Error(`区切り記号が見つかりません：${line}`);
-    const side = parts[parts.length-1].toLowerCase();
-    const q = parts.slice(0, parts.length-1).join(' ');
-    if (side!=='left' && side!=='right') throw new Error(`正解サイドは left / right で指定してください：${line}`);
-    out.push({ q, correct: side });
-  }
-  if (!out.length) throw new Error('問題が空です');
-  return out;
-}
-
+// PC授業向け：Space=左 / Enter,→=右 / ←=左
 window.addEventListener('keydown', (e)=>{
   if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
   else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
