@@ -1,178 +1,233 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BokiExercise 左右タッチ即判定クイズ（入口）</title>
-<style>
-  :root{
-    --bg:#0b0d12; --card:#121622; --card2:#0f131d; --fg:#e9edf7; --mut:#aab2c5;
-    --bd:#25304a; --accent:#7aa2ff; --ok:#1db954; --ng:#ff4d4f;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; background:radial-gradient(1200px 800px at 20% -10%, rgba(122,162,255,.20), transparent 60%),
-                   radial-gradient(900px 700px at 110% 10%, rgba(29,185,84,.12), transparent 55%),
-                   var(--bg);
-    color:var(--fg);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
-  }
-  .wrap{max-width:860px; margin:0 auto; padding:22px 16px 28px;}
-  .hero{
-    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:18px;
-    padding:18px 18px 14px;
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
-  }
-  h1{margin:0 0 6px; font-size:20px;}
-  .sub{color:var(--mut); font-size:13px; line-height:1.6;}
-  .panel{
-    margin-top:14px;
-    background:rgba(18,22,34,.85);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:18px;
-    padding:14px;
-  }
-  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-  select{
-    flex:1;
-    min-width:240px;
-    padding:10px 12px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.10);
-    background:#0e1320;
-    color:var(--fg);
-    font-size:14px;
-  }
-  button{
-    padding:10px 14px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.12);
-    background:linear-gradient(180deg, rgba(122,162,255,.18), rgba(122,162,255,.08));
-    color:var(--fg);
-    font-weight:700;
-    cursor:pointer;
-  }
-  button:hover{filter:brightness(1.05);}
-  .hint{margin-top:10px; color:var(--mut); font-size:12px; line-height:1.55;}
-  .grid{
-    margin-top:14px;
-    display:grid;
-    grid-template-columns:1fr;
-    gap:10px;
-  }
-  .card{
-    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:16px;
-    padding:12px 14px;
-  }
-  .card h2{margin:0 0 6px; font-size:14px;}
-  .links{display:flex; flex-wrap:wrap; gap:10px;}
-  a{
-    color:var(--fg);
-    text-decoration:none;
-    padding:8px 10px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.12);
-    background:rgba(15,19,29,.6);
-    font-size:12px;
-  }
-  a:hover{border-color:rgba(122,162,255,.55);}
-  .warn{color:#ffd27a;}
-  .ok{color:#9cf2b9;}
-  .foot{margin-top:14px; color:var(--mut); font-size:11px; text-align:center;}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BokiExercise 左右タッチ即判定クイズ</title>
+  <style>
+    :root{
+      --bg:#0b0e14;
+      --panel:#121827;
+      --panel2:#0f1523;
+      --bd:#22304a;
+      --fg:#e9eefb;
+      --mut:#a7b3cc;
+      --accent:#7aa2ff;
+      --ok:#1db954;
+      --warn:#ffd166;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(122,162,255,.18), transparent 60%),
+                  radial-gradient(900px 500px at 120% 10%, rgba(29,185,84,.12), transparent 55%),
+                  var(--bg);
+      color:var(--fg);
+      font-family: system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+    }
+    .wrap{
+      width:min(720px, 100%);
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(18,24,39,.92), rgba(15,21,35,.92));
+      border:1px solid rgba(34,48,74,.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 18px 16px;
+      backdrop-filter: blur(6px);
+    }
+    h1{
+      margin:0 0 6px;
+      font-size: 20px;
+      letter-spacing:.2px;
+    }
+    .lead{
+      margin:0 0 12px;
+      color:var(--mut);
+      line-height:1.6;
+      font-size:13.5px;
+    }
+    .note{
+      margin:10px 0 14px;
+      color:var(--mut);
+      font-size:12px;
+    }
+    .note b{ color:var(--fg); font-weight:700; }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+    }
+    label{
+      font-size:13px;
+      color:var(--mut);
+      white-space:nowrap;
+    }
+    select{
+      flex:1;
+      min-width: 240px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(34,48,74,.95);
+      background: rgba(11,14,20,.65);
+      color: var(--fg);
+      outline:none;
+    }
+    select:focus{ border-color: rgba(122,162,255,.9); box-shadow: 0 0 0 3px rgba(122,162,255,.18); }
+    button{
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(34,48,74,.95);
+      background: linear-gradient(180deg, rgba(122,162,255,.18), rgba(122,162,255,.10));
+      color: var(--fg);
+      cursor:pointer;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    button:hover{ filter: brightness(1.06); }
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      filter:none;
+    }
+    .status{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--mut);
+      min-height: 1.4em;
+    }
+    .status .ok{ color: var(--ok); font-weight:700; }
+    .status .warn{ color: var(--warn); font-weight:700; }
+    footer{
+      margin-top:12px;
+      text-align:center;
+      font-size:12px;
+      color:var(--mut);
+    }
+    footer a{ color: var(--mut); text-decoration: none; border-bottom: 1px dotted rgba(167,179,204,.55); }
+    footer a:hover{ color: var(--fg); border-bottom-color: rgba(233,238,251,.8); }
+  </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="hero">
+    <div class="card">
       <h1>BokiExercise 左右タッチ即判定クイズ</h1>
-      <div class="sub">
-        使いたい「問題セット」を選んで開始 → 該当の <code>touch_****.html</code> を開きます。<br>
-        ※ 左右＝借方/貸方（モード切替あり）。満点で🌸演出。
+      <p class="lead">「問題セット」を選んで開始</p>
+      <p class="note">※ <b>左右＝借方/貸方</b>。満点で🌸演出。</p>
+
+      <div class="row">
+        <label for="setSelect">問題セット：</label>
+        <select id="setSelect"></select>
+        <button id="startBtn" disabled>開始</button>
       </div>
 
-      <div class="panel">
-        <div class="row">
-          <label style="font-size:13px;color:var(--mut);white-space:nowrap;">問題セット：</label>
-          <select id="setSelect"></select>
-          <button id="goBtn">このセットで開始</button>
-        </div>
-        <div class="hint" id="statusMsg"></div>
-      </div>
+      <div class="status" id="status"></div>
+
+      <p class="note">※ 準備ができていないものは「準備中」と表示されます。</p>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <h2>直リンク（確認用）</h2>
-        <div class="links" id="directLinks"></div>
-        <div class="hint">※ ファイルが無いものは「準備中」と表示されます。</div>
-      </div>
-    </div>
-
-    <div class="foot">© BokiExercise｜入口ページ（index.html）</div>
+    <footer>© BokiExercise｜<a href="./" aria-label="homepage">homepage</a></footer>
   </div>
 
 <script>
-  // ▼ ここが “セット → ファイル” の対応表（増やす場所）
-  const sets = [
-    {key:"standard", label:"3級仕訳標準", file:"touch_standard.html"},
-    {key:"genkin",   label:"3級仕訳基礎0.現金のみ", file:"touch_genkin.html"},
-    {key:"shouhin",  label:"3級仕訳基礎1.商品取引", file:"touch_shouhin.html"},
-    {key:"kotei",    label:"3級仕訳基礎2.固定資産", file:"touch_kotei.html"},
-    {key:"keika",    label:"3級仕訳基礎3.経過勘定", file:"touch_keika.html"},
-    {key:"zeikin",   label:"3級仕訳基礎4.税金・配当", file:"touch_zeikin.html"},
-    {key:"kyuryo",   label:"3級仕訳基礎5.給料・福利", file:"touch_kyuryo.html"},
-    {key:"kashitsuke",label:"3級仕訳基礎6.貸付・立替", file:"touch_kashitsuke.html"},
-    {key:"kariire",  label:"3級仕訳基礎7.借入・預り", file:"touch_kariire.html"},
-    {key:"shohi",    label:"3級仕訳基礎8.諸費・雑費", file:"touch_shohi.html"},
-    {key:"fudosan",  label:"3級仕訳基礎9.不動産", file:"touch_fudosan.html"},
-    {key:"shisan",   label:"3級仕訳基礎10.純資産", file:"touch_shisan.html"},
-  ];
+/**
+ * 入口(index.html)は「選択→開始」だけ。
+ * それぞれのセットは別ファイル(touch_*.html)に遷移。
+ * 未作成ファイルは fetch で確認し「準備中」表示＋開始不可。
+ */
+const sets = [
+  { key:"standard", label:"3級仕訳標準", file:"touch_standard.html" },
+  { key:"genkin",   label:"3級仕訳基礎0.現金のみ", file:"touch_genkin.html" },
+  { key:"shouhin",  label:"3級仕訳基礎1.商品取引", file:"touch_shouhin.html" },
+  { key:"kotei",    label:"3級仕訳基礎2.固定資産", file:"touch_kotei.html" },
+  { key:"keika",    label:"3級仕訳基礎3.経過勘定", file:"touch_keika.html" },
+  { key:"zeikin",   label:"3級仕訳基礎4.税金・配当", file:"touch_zeikin.html" },
+  { key:"kyuryo",   label:"3級仕訳基礎5.給料・福利", file:"touch_kyuryo.html" },
+  { key:"kashitsuke", label:"3級仕訳基礎6.貸付・立替", file:"touch_kashitsuke.html" },
+  { key:"kariire",  label:"3級仕訳基礎7.借入・預り", file:"touch_kariire.html" },
+  { key:"shohi",    label:"3級仕訳基礎8.諸費・雑費", file:"touch_shohi.html" },
+  { key:"fudosan",  label:"3級仕訳基礎9.不動産", file:"touch_fudosan.html" },
+  { key:"shisan",   label:"3級仕訳基礎10.純資産", file:"touch_shisan.html" },
+];
 
-  const sel = document.getElementById("setSelect");
-  const statusMsg = document.getElementById("statusMsg");
-  const links = document.getElementById("directLinks");
+const elSel = document.getElementById("setSelect");
+const elBtn = document.getElementById("startBtn");
+const elStatus = document.getElementById("status");
 
-  // プルダウン生成
-  sets.forEach(s=>{
-    const o=document.createElement("option");
-    o.value=s.key; o.textContent=s.label;
-    sel.appendChild(o);
-  });
+function setStatus(html){ elStatus.innerHTML = html || ""; }
 
-  // 直リンク生成
- sets.forEach(s=>{
-  const a=document.createElement("a");
-  a.href = s.file;
-  // 表示だけ日本語（ファイル名は見せない）
-  a.textContent = s.label;
-  a.title = s.file; // どうしても見たいとき用（マウスで出る）
-  a.target="_self";
-  links.appendChild(a);
-});
-
-
-  function setStatus(text, cls){
-    statusMsg.className = "hint " + (cls||"");
-    statusMsg.innerHTML = text;
+async function exists(url){
+  // GitHub Pages 同一オリジンならOK
+  try{
+    const r = await fetch(url, { method:"GET", cache:"no-store" });
+    return r.ok;
+  }catch(e){
+    return false;
   }
+}
 
-  // “存在チェック”はGitHub Pagesでは厳密にはできないので、説明だけ出す
-  setStatus(
-    `※ 4以降が開けない場合は <span class="warn">touch_****.html が未作成</span>です。<br>
-     その場合：リポジトリにファイルを追加 → Pages更新後に開けます。`,
-    ""
-  );
-
-  document.getElementById("goBtn").addEventListener("click", ()=>{
-    const key = sel.value;
-    const s = sets.find(x=>x.key===key);
-    if(!s) return;
-    location.href = s.file;
+function renderOptions(availability){
+  elSel.innerHTML = "";
+  sets.forEach(s=>{
+    const ok = availability.get(s.file) === true;
+    const opt = document.createElement("option");
+    opt.value = s.file;
+    opt.dataset.ready = ok ? "1" : "0";
+    opt.textContent = ok ? s.label : `${s.label}（準備中）`;
+    elSel.appendChild(opt);
   });
+}
+
+function updateButtonState(){
+  const opt = elSel.selectedOptions[0];
+  const ready = opt && opt.dataset.ready === "1";
+  elBtn.disabled = !ready;
+  if (!opt){
+    setStatus("");
+    return;
+  }
+  if (ready){
+    setStatus(`<span class="ok">準備OK</span>：開始できます。`);
+  }else{
+    setStatus(`<span class="warn">準備中</span>：このセットはまだ作成されていません。`);
+  }
+}
+
+(async function init(){
+  setStatus("準備状況を確認中…");
+
+  // まとめて存在確認（並列）
+  const availability = new Map();
+  await Promise.all(sets.map(async s=>{
+    const ok = await exists(s.file);
+    availability.set(s.file, ok);
+  }));
+
+  renderOptions(availability);
+
+  // 既定：standard を選ぶ（なければ先頭）
+  const idx = sets.findIndex(s=>s.key==="standard");
+  elSel.selectedIndex = (idx >= 0) ? idx : 0;
+
+  updateButtonState();
+})();
+
+elSel.addEventListener("change", updateButtonState);
+
+elBtn.addEventListener("click", ()=>{
+  const opt = elSel.selectedOptions[0];
+  if (!opt || opt.dataset.ready !== "1") return;
+  location.href = opt.value;
+});
 </script>
 </body>
 </html>
