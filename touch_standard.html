@@ -4,247 +4,421 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>BokiExercise 左右タッチ即判定クイズ</title>
-
+<title>BokiExercise 左右タッチ即判定クイズ（標準）</title>
 <style>
-:root{
-  --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6;
-  --ok:#1db954; --ng:#ff4d4f; --card:#171a21;
-}
-*{box-sizing:border-box;}
-html,body{
-  margin:0;height:100%;background:var(--bg);color:var(--fg);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic","Meiryo",sans-serif;
-}
-#app{max-width:720px;margin:0 auto;height:100%;display:flex;flex-direction:column;}
+  :root{
+    --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6;
+    --ok:#1db954; --ng:#ff4d4f;
+    --card:#171a21;
+    --bd:#2b2f3a;
+  }
+  *{ box-sizing:border-box; }
+  html, body{
+    height:100%; margin:0;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(29,185,84,.10), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(88,101,242,.10), transparent 55%),
+      var(--bg);
+    color:var(--fg);
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
+      "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif;
+  }
+  #app{ display:flex; flex-direction:column; height:100%; max-width:720px; margin:0 auto; }
 
-header{
-  background:var(--card);
-  padding:10px 12px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-header h1{font-size:15px;margin:0;flex:1;}
-.pill{
-  font-size:11px;color:var(--muted);
-  border:1px solid #2b2f3a;border-radius:999px;
-  padding:2px 8px;
-}
+  header{
+    position:relative;
+    padding: 12px 16px;
+    background: rgba(23,26,33,.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    display:flex; align-items:center; gap:10px;
+  }
+  header h1{ font-size:16px; margin:0; flex:1; letter-spacing:.2px; }
+  .pill{
+    padding:2px 10px;
+    border:1px solid var(--bd);
+    border-radius:999px;
+    font-size:11px;
+    color:var(--muted);
+    background: rgba(15,19,25,.45);
+  }
 
-/* Topボタン */
-.top-btn{
-  position:sticky;
-  left:0; top:0;
-  font-size:12px;
-  color:var(--muted);
-  text-decoration:none;
-  border:1px solid #2b2f3a;
-  padding:4px 10px;
-  border-radius:999px;
-  opacity:.6;
-}
-.top-btn.active{opacity:1;}
+  /* ▼ Top（左上固定） */
+  .top-btn{
+    position: sticky;
+    top: 10px;
+    left: 10px;
+    z-index: 30;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color: var(--fg);
+    text-decoration:none;
+    border:1px solid var(--bd);
+    background: rgba(15,17,21,.45);
+    padding:6px 10px;
+    border-radius:999px;
+    opacity:.42;                  /* 問題中は半透明 */
+    backdrop-filter: blur(8px);
+    -webkit-tap-highlight-color: transparent;
+    user-select:none;
+    transition: opacity .15s ease, transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .top-btn:hover{ opacity:.75; }
+  .top-btn:active{ transform: scale(.98); opacity:.9; }
+  .top-btn.strong{
+    opacity:1;                    /* 結果画面では強調 */
+    border-color: rgba(29,185,84,.55);
+    box-shadow: 0 0 0 3px rgba(29,185,84,.14), 0 12px 30px rgba(0,0,0,.35);
+  }
 
-#questionBox{
-  padding:16px;
-  text-align:center;
-  font-size:clamp(20px,6vw,30px);
-  line-height:1.4;
-  max-height:40vh;
-  overflow-y:auto;
-}
-#sub{font-size:12px;color:var(--muted);}
+  #questionBox{
+    padding: 18px 16px;
+    text-align:center;
+    font-size: clamp(20px, 6vw, 32px);
+    line-height:1.4;
+    overflow-y:auto;
+    max-height: 40vh;
+  }
+  #question{ margin:6px 0 4px; font-weight:700; text-align:center; }
+  #sub{ font-size:12px; color:var(--muted); }
 
-#arena{flex:1;display:flex;}
-.side{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  font-size:clamp(28px,8vw,44px);
-  font-weight:700;
-  user-select:none;
-}
-.left{border-right:1px solid #222;}
-.label{opacity:.85;}
+  #arena{ flex:1; display:flex; }
+  .side{
+    flex:1; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(28px, 8vw, 44px);
+    font-weight:800;
+    border-top:1px solid rgba(255,255,255,.06);
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .left{
+    border-right:1px solid rgba(255,255,255,.06);
+    background: linear-gradient(180deg, rgba(45,45,55,.28), rgba(0,0,0,.08));
+  }
+  .right{
+    background: linear-gradient(180deg, rgba(45,45,55,.28), rgba(0,0,0,.08));
+  }
+  .label{ pointer-events:none; opacity:.92; }
 
-#scoreBar{
-  padding:8px 16px;
-  font-size:13px;
-  color:var(--muted);
-  display:flex;
-  justify-content:space-between;
-}
+  #scoreBar{
+    padding: 8px 16px;
+    font-size:13px;
+    color:var(--muted);
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+  }
 
-#controls{
-  display:flex;gap:8px;
-  padding:12px 16px;
-  background:var(--card);
-}
-button{
-  flex:1;
-  padding:12px;
-  background:#1c222b;
-  color:var(--fg);
-  border:1px solid #2b2f3a;
-  border-radius:10px;
-  font-size:14px;
-}
+  #controls{
+    display:flex;
+    gap:8px;
+    padding: 12px 16px;
+    background: rgba(23,26,33,.92);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,.04);
+  }
+  button{
+    flex:1;
+    padding:12px;
+    border:1px solid var(--bd);
+    background: linear-gradient(180deg, rgba(28,34,43,1), rgba(20,24,31,1));
+    color:var(--fg);
+    border-radius:12px;
+    font-size:14px;
+    cursor:pointer;
+    transition: transform .12s ease, filter .12s ease, border-color .12s ease;
+  }
+  button:hover{ filter: brightness(1.08); border-color: rgba(255,255,255,.18); }
+  button:active{ transform: scale(.98); }
 
-#flash{
-  position:fixed;inset:0;
-  display:none;
-  align-items:center;justify-content:center;
-  font-size:clamp(56px,18vw,120px);
-  font-weight:900;
-  z-index:10;
-}
-#flash.ok{background:rgba(29,185,84,.12);color:var(--ok);}
-#flash.ng{background:rgba(255,77,79,.12);color:var(--ng);}
+  #flash{
+    position: fixed; inset: 0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    font-size: clamp(56px, 18vw, 120px);
+    font-weight:900;
+    z-index: 50;
+  }
+  #flash.ok{ background: rgba(29,185,84,.12); color:var(--ok); }
+  #flash.ng{ background: rgba(255,77,79,.12); color:var(--ng); }
 
-.result-item{font-size:14px;margin-bottom:8px;text-align:left;}
-.badge-ok{color:var(--ok);}
-.badge-ng{color:var(--ng);}
-.small-muted{font-size:11px;color:var(--muted);}
-.growth-emoji{font-size:120px;}
+  #footerNote{
+    text-align:center;
+    font-size:11px;
+    color:var(--muted);
+    padding: 10px 0 14px;
+  }
 
-textarea{
-  width:100%;
-  min-height:120px;
-  background:#0f1319;
-  color:var(--fg);
-  border:1px solid #2b2f3a;
-  border-radius:8px;
-  padding:10px;
-  font-size:12px;
-}
+  .result-item{ font-size:14px; margin-bottom:8px; text-align:left; }
+  .result-item span.badge{
+    display:inline-block;
+    min-width:2.2em;
+    text-align:center;
+    border-radius:999px;
+    padding:0 6px;
+    margin-right:6px;
+    font-size:12px;
+  }
+  .badge-ok{ background:rgba(29,185,84,.15); color:var(--ok); }
+  .badge-ng{ background:rgba(255,77,79,.15); color:var(--ng); }
+  .small-muted{ font-size:11px; color:var(--muted); }
+
+  .growth-emoji{ font-size: 120px; line-height: 1.1; }
+  .growth-box{ text-align:center; margin-bottom:12px; }
+
+  textarea{
+    width:100%;
+    min-height:120px;
+    background:#0f1319;
+    color:var(--fg);
+    border:1px solid var(--bd);
+    border-radius:10px;
+    padding:10px;
+    font-size:12px;
+  }
 </style>
 </head>
 
 <body>
 <div id="app">
+  <header>
+    <a href="index.html" class="top-btn" id="topBtn">Top</a>
+    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
+    <div class="pill">標準</div>
+  </header>
 
-<header>
-  <a href="index.html" class="top-btn" id="topBtn">Top</a>
-  <h1>BokiExercise 左右タッチ即判定クイズ</h1>
-  <div class="pill">標準</div>
-</header>
+  <div id="questionBox">
+    <div id="question">スタートを押してください</div>
+    <div id="sub">会計ボキササイズ：左=借方（Debit）/ 右=貸方（Credit）</div>
+  </div>
 
-<div id="questionBox">
-  <div id="question">スタートを押してください</div>
-  <div id="sub">左＝借方 ／ 右＝貸方</div>
-</div>
+  <div id="arena">
+    <div class="side left"  id="leftSide"  role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
+    <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
+  </div>
 
-<div id="arena">
-  <div class="side left" id="leftSide"><div class="label">左（借方）</div></div>
-  <div class="side right" id="rightSide"><div class="label">右（貸方）</div></div>
-</div>
+  <div id="scoreBar">
+    <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
+    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
+  </div>
 
-<div id="scoreBar">
-  <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
-  <div>正解 <span id="ok">0</span> ／ ミス <span id="ng">0</span></div>
-</div>
+  <div id="controls">
+    <button id="btnStart">スタート / シャッフル</button>
+    <button id="btnReset">リセット</button>
+  </div>
 
-<div id="controls">
-  <button id="btnStart">スタート</button>
-  <button id="btnReset">リセット</button>
-</div>
-
+  <div id="footerNote">© BokiExercise</div>
 </div>
 
 <div id="flash"></div>
 
 <script>
-/* ===== 問題（正解確認済） ===== */
-const questionsBase = [
-  ["資産が増加するのは？","left"],
-  ["資産が減少するのは？","right"],
-  ["負債が増加するのは？","right"],
-  ["負債が減少するのは？","left"],
-  ["純資産が増加するのは？","right"],
-  ["費用が発生するのは？","left"],
-  ["収益が発生するのは？","right"],
-  ["売上は？","right"],
-  ["仕入は？","left"],
-  ["備品（購入）は？","left"],
-  ["現金（支払）は？","right"],
-  ["支払家賃は？","left"],
-  ["売掛金回収の現金は？","left"],
-  ["買掛金の支払は？","left"],
-  ["前受金は？","right"]
+// =======================
+// ▼ 3級仕訳標準（15問） ▼
+// ※ここは先生の問題文を一切いじりません
+// =======================
+const set_standard = [
+  { q: "資産（現金・売掛金など）が『増加』するのは？", correct: "left" },
+  { q: "資産（現金・売掛金など）が『減少』するのは？", correct: "right" },
+  { q: "負債（買掛金・借入金など）が『増加』するのは？", correct: "right" },
+  { q: "負債（買掛金・借入金など）が『減少』するのは？", correct: "left" },
+  { q: "資本・純資産（資本金・繰越利益剰余金など）が『増加』するのは？", correct: "right" },
+  { q: "費用（仕入・給料・減価償却費など）が『発生』するのは？", correct: "left" },
+  { q: "収益（売上・受取利息など）が『発生』するのは？", correct: "right" },
+  { q: "売上が計上されたときの『売上』は？", correct: "right" },
+  { q: "仕入で商品が増えたときの『仕入』は？", correct: "left" },
+  { q: "備品を現金で購入したときの『備品』は？", correct: "left" },
+  { q: "備品を現金で購入したときの『現金』は？", correct: "right" },
+  { q: "家賃を支払ったときの『支払家賃』は？", correct: "left" },
+  { q: "売掛金を回収して『現金』が増えたときは？", correct: "left" },
+  { q: "買掛金を支払って『買掛金』が減少したときは？", correct: "left" },
+  { q: "前受金が発生したときの『前受金』は？", correct: "right" }
 ];
 
-let questions=[], idx=0, ok=0, ng=0, results=[];
+let questions = JSON.parse(JSON.stringify(set_standard));
+let idx = 0, ok = 0, ng = 0, streak = 0;
+let results = [];
 
-const qEl=document.getElementById("question");
-const idxEl=document.getElementById("idx");
-const totalEl=document.getElementById("total");
-const okEl=document.getElementById("ok");
-const ngEl=document.getElementById("ng");
-const flash=document.getElementById("flash");
-const box=document.getElementById("questionBox");
-const topBtn=document.getElementById("topBtn");
+const elQ = document.getElementById('question');
+const elSub = document.getElementById('sub');
+const elIdx = document.getElementById('idx');
+const elTotal = document.getElementById('total');
+const elOk = document.getElementById('ok');
+const elNg = document.getElementById('ng');
+const elStreak = document.getElementById('streak');
+const flash = document.getElementById('flash');
+const questionBox = document.getElementById('questionBox');
+const topBtn = document.getElementById('topBtn');
 
-totalEl.textContent=questionsBase.length;
+elTotal.textContent = questions.length;
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
+    const j = Math.floor(Math.random()*(i+1));
     [a[i],a[j]]=[a[j],a[i]];
   }
+  return a;
 }
 
 function start(){
-  questions=questionsBase.map(q=>({q:q[0],a:q[1]}));
-  shuffle(questions);
-  idx=ok=ng=0; results=[];
-  okEl.textContent=ngEl.textContent=0;
+  // 結果で強調されていたら戻す（再挑戦）
+  topBtn.classList.remove('strong');
+
+  idx = 0; ok = 0; ng = 0; streak = 0;
+  results = [];
+  questions = shuffle([...questions]);
+  elTotal.textContent = questions.length;
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
   next();
 }
 
 function next(){
-  if(idx>=questions.length){ showResult(); return; }
-  qEl.textContent=questions[idx].q;
-  idxEl.textContent=idx+1;
+  if (idx >= questions.length){
+    showResults();
+    return;
+  }
+  const item = questions[idx];
+  elQ.textContent = item.q;
+  elIdx.textContent = idx+1;
+  elSub.textContent = '左=借方 / 右=貸方';
+}
+
+function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
+
+// 簡易ビープ（初回ユーザー操作後のみ作動）
+let audioCtx = null;
+function beep(okFlag=true){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = okFlag ? 880 : 220;
+    g.gain.value = 0.02;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    setTimeout(()=>{ o.stop(); }, 120);
+  }catch(e){ /* ignore */ }
 }
 
 function judge(side){
-  const correct=questions[idx].a;
-  const isOK=(side===correct);
-  results.push({q:questions[idx].q,ok:isOK,side,correct});
-  flash.className=isOK?"ok":"ng";
-  flash.textContent=isOK?"⭕":"❌";
-  flash.style.display="flex";
-  setTimeout(()=>flash.style.display="none",300);
-  isOK?ok++:ng++;
-  okEl.textContent=ok; ngEl.textContent=ng;
+  if (idx >= questions.length) return;
+
+  const item = questions[idx];
+  const isOK = (side === item.correct);
+
+  results.push({
+    no: idx+1,
+    question: item.q,
+    answered: side,
+    correct: item.correct,
+    isOK: isOK
+  });
+
+  showFlash(isOK);
+
+  if (isOK){ ok++; streak++; vibrate(20); beep(true); }
+  else { ng++; streak=0; vibrate([30,40,30]); beep(false); }
+
+  elOk.textContent = ok;
+  elNg.textContent = ng;
+  elStreak.textContent = streak;
+
   idx++;
-  setTimeout(next,500);
+  setTimeout(next, 600);
 }
 
-function showResult(){
-  topBtn.classList.add("active");
-  let html="";
-  if(ok===questions.length){
-    html+=`<div class="growth-emoji">🌸</div><div class="small-muted">全問正解！</div>`;
+function showFlash(isOK){
+  flash.className = isOK ? 'ok' : 'ng';
+  flash.textContent = isOK ? '⭕' : '❌';
+  flash.style.display = 'flex';
+  setTimeout(()=>{ flash.style.display='none'; }, 350);
+}
+
+function showResults(){
+  // 結果画面はTopを強調（押しやすい）
+  topBtn.classList.add('strong');
+
+  const total = questions.length;
+  const percent = total ? Math.round(ok / total * 100) : 0;
+
+  let growthHtml = "";
+  if (total > 0 && ok === total) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌸</div>
+        <div class="small-muted">全問正解！花が咲きました。</div>
+      </div>
+    `;
+  } else if (ok <= 5) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌱</div>
+        <div class="small-muted">今日は種まきの日。少しずつ育てていきましょう。</div>
+      </div>
+    `;
+  } else {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌿</div>
+        <div class="small-muted">芽が出てきました。続ければきっと満開になります。</div>
+      </div>
+    `;
   }
-  html+=`<h3>結果 ${ok}/${questions.length}</h3>`;
-  results.forEach((r,i)=>{
-    html+=`<div class="result-item">
-      ${r.ok?"<span class='badge-ok'>○</span>":"<span class='badge-ng'>×</span>"}
-      ${i+1}. ${r.q}
+
+  let html = "";
+  html += growthHtml;
+  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:700;">結果一覧</div>`;
+  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
+
+  results.forEach(r => {
+    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
+    const badgeLabel = r.isOK ? '○' : '×';
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+
+    html += `<div class="result-item">
+      <span class="badge ${badgeClass}">${badgeLabel}</span>
+      <strong>${r.no}. ${r.question}</strong><br>
+      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
     </div>`;
   });
-  box.innerHTML=html;
+
+  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
+
+  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
+  results.forEach(r => {
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+    const status = r.isOK ? "正解" : "不正解";
+    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
+    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
+  });
+
+  html += `<div style="margin-top:10px;">
+    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
+    <textarea readonly onclick="this.select()">${textReport}</textarea>
+  </div>`;
+
+  questionBox.innerHTML = html;
+  elIdx.textContent = total;
+  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
 }
 
-document.getElementById("leftSide").onclick=()=>judge("left");
-document.getElementById("rightSide").onclick=()=>judge("right");
-document.getElementById("btnStart").onclick=start;
-document.getElementById("btnReset").onclick=()=>location.reload();
+// UI操作（シンプル・二重登録なし）
+document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
+document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
+document.getElementById('btnStart').addEventListener('click', start);
+document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
 
-document.addEventListener("keydown",e=>{
-  if(e.code==="Space"){judge("left");e.preventDefault();}
-  if(e.code==="Enter"||e.code==="ArrowRight"){judge("right");e.preventDefault();}
-  if(e.code==="ArrowLeft"){judge("left");e.preventDefault();}
+// PC授業向け：Space=左 / Enter,→=右 / ←=左
+window.addEventListener('keydown', (e)=>{
+  if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
+  else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
+  else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
 });
 </script>
 </body>
