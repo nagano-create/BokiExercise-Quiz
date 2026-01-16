@@ -1,120 +1,295 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>3級仕訳 基礎0（現金のみ）</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BokiExercise｜3級仕訳基礎0.現金のみ</title>
+<meta name="theme-color" content="#0f1115" />
 <style>
-body{
-  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-  background:#fafafa;
-  margin:20px;
-}
-h1{font-size:20px;margin-bottom:10px;}
-.q{background:#fff;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:12px;}
-.qtext{margin-bottom:10px;font-size:15px;}
-.area{display:flex;gap:10px;}
-.box{
-  flex:1;
-  border:2px dashed #bbb;
-  border-radius:10px;
-  min-height:50px;
-  padding:10px;
-  text-align:center;
-  font-weight:700;
-}
-.box span{display:inline-block;padding:6px 12px;border-radius:999px;background:#e0e7ff;}
-.btns{margin-top:10px;}
-button{
-  padding:6px 12px;
-  border-radius:8px;
-  border:1px solid #999;
-  background:#fff;
-  cursor:pointer;
-}
-.result{font-weight:700;margin-left:10px;}
-.ok{color:#1a7f37;}
-.ng{color:#b42318;}
+  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
+      "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
+
+  #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
+
+  header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
+  header h1 { font-size: 16px; margin: 0; flex:1; }
+  header .meta { font-size:12px; color: var(--muted); }
+  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
+
+  #questionBox {
+    padding: 18px 16px;
+    text-align: center;
+    font-size: clamp(20px, 6vw, 32px);
+    line-height:1.4;
+    overflow-y:auto;
+    max-height: 42vh;
+  }
+  #question { margin: 6px 0 4px; font-weight: 700; }
+  #sub { font-size: 12px; color: var(--muted); }
+
+  #arena { flex:1; display:flex; }
+  .side {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(28px, 8vw, 44px);
+    font-weight:900;
+    border-top:1px solid #222;
+    user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .left { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .right { background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .label { pointer-events: none; opacity:.9; }
+
+  #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
+  #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
+  button { flex:1; padding: 12px; border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
+    border-radius:10px; font-size:14px; font-weight:700; }
+  button:active { transform: scale(.98); }
+
+  #flash {
+    position: fixed; inset: 0; display:none; align-items:center; justify-content:center;
+    font-size: clamp(56px, 18vw, 120px);
+    font-weight:900; z-index: 10;
+  }
+  #flash.ok { background: rgba(29,185,84,.12); color: var(--ok); }
+  #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
+
+  #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
+
+  .growth-emoji { font-size: 120px; line-height: 1.1; }
+  .growth-box { text-align:center; margin-bottom:12px; }
+  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg);
+    border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
+  .result-item { font-size:14px; margin-bottom:10px; }
+  .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px;
+    padding:0 6px; margin-right:6px; font-size:12px; }
+  .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
+  .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
+  .small-muted { font-size:11px; color:var(--muted); }
 </style>
 </head>
+
 <body>
+<div id="app">
+  <header>
+    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
+    <div class="meta"><span class="pill">3級仕訳基礎0.現金のみ｜左=借方 / 右=貸方</span></div>
+  </header>
 
-<h1>3級仕訳 基礎0：現金のみ（左右タッチ）</h1>
-<p>※ 現金が <b>増える→左</b> ／ <b>減る→右</b></p>
+  <div id="questionBox">
+    <div id="question">スタートを押してください</div>
+    <div id="sub">※ 左右＝借方/貸方。満点で🌸演出。</div>
+  </div>
 
-<div id="app"></div>
+  <div id="arena">
+    <div class="side left" id="leftSide" role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
+    <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
+  </div>
 
-<button onclick="gradeAll()">15問まとめて採点</button>
-<span id="score"></span>
+  <div id="scoreBar">
+    <div>問 <span id="idx">0</span>/<span id="total">15</span></div>
+    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
+  </div>
+
+  <div id="controls">
+    <button id="btnStart">スタート / シャッフル</button>
+    <button id="btnReset">リセット</button>
+  </div>
+
+  <div id="footerNote">© BokiExercise｜homepage</div>
+</div>
+
+<div id="flash"></div>
 
 <script>
-const questions = [
-  "現金を受け取った。",
-  "現金を支払った。",
-  "売上代金として現金を受け取った。",
-  "代金を現金で支払った。",
-  "財布に現金が増えた。",
-  "現金が減った。",
-  "現金をもらった。",
-  "現金を渡した。",
-  "手元の現金が増加した。",
-  "手元の現金が減少した。",
-  "現金を引き出した。",
-  "現金を預け入れた。",
-  "現金で支払った。",
-  "現金で受け取った。",
-  "現金が手元に入った。"
+// =======================
+// 3級仕訳基礎0.現金のみ（15問）
+// left=借方 / right=貸方
+// =======================
+const questionsBase = [
+  { q: "商品を現金で販売した。『現金』は？", correct: "left" },
+  { q: "商品を現金で販売した。『売上』は？", correct: "right" },
+  { q: "商品を現金で仕入れた。『仕入』は？", correct: "left" },
+  { q: "商品を現金で仕入れた。『現金』は？", correct: "right" },
+  { q: "売掛金を現金で回収した。『現金』は？", correct: "left" },
+  { q: "売掛金を現金で回収した。『売掛金』は？", correct: "right" },
+  { q: "買掛金を現金で支払った。『買掛金』は？", correct: "left" },
+  { q: "買掛金を現金で支払った。『現金』は？", correct: "right" },
+  { q: "給料を現金で支払った。『給料』は？", correct: "left" },
+  { q: "給料を現金で支払った。『現金』は？", correct: "right" },
+  { q: "備品を現金で購入した。『備品』は？", correct: "left" },
+  { q: "備品を現金で購入した。『現金』は？", correct: "right" },
+  { q: "借入金30,000円を現金で返済した。『借入金』は？", correct: "left" },
+  { q: "借入金30,000円を現金で返済した。『現金』は？", correct: "right" },
+  { q: "現金が不足していたので現金過不足で処理した。『現金過不足』は？", correct: "left" },
 ];
 
-// true = 左が正解（現金↑）
-const answers = [
-  true,false,true,false,true,false,true,false,true,false,true,false,false,true,true
-];
+let questions = [];
+let idx = 0, ok = 0, ng = 0, streak = 0;
+let results = [];
 
-const app = document.getElementById("app");
+const elQ = document.getElementById('question');
+const elSub = document.getElementById('sub');
+const elIdx = document.getElementById('idx');
+const elTotal = document.getElementById('total');
+const elOk = document.getElementById('ok');
+const elNg = document.getElementById('ng');
+const elStreak = document.getElementById('streak');
+const flash = document.getElementById('flash');
+const questionBox = document.getElementById('questionBox');
 
-questions.forEach((q,i)=>{
-  const div = document.createElement("div");
-  div.className="q";
-  div.innerHTML = `
-    <div class="qtext">【${i+1}】${q}</div>
-    <div class="area">
-      <div class="box left" onclick="select(${i},'L')">左</div>
-      <div class="box right" onclick="select(${i},'R')">右</div>
-    </div>
-    <div class="btns">
-      <button onclick="grade(${i})">判定</button>
-      <span class="result" id="res${i}"></span>
-    </div>
-  `;
-  app.appendChild(div);
-});
-
-const user = Array(15).fill(null);
-
-function select(i,side){
-  user[i]=side;
-  const q = app.children[i];
-  q.querySelector(".left").innerHTML = side==="L" ? "<span>現金</span>" : "左";
-  q.querySelector(".right").innerHTML = side==="R" ? "<span>現金</span>" : "右";
-}
-
-function grade(i){
-  const ok = (user[i]==="L") === answers[i];
-  const r = document.getElementById("res"+i);
-  r.textContent = ok ? "正解" : "不正解";
-  r.className = "result " + (ok?"ok":"ng");
-}
-
-function gradeAll(){
-  let score=0;
-  for(let i=0;i<15;i++){
-    if((user[i]==="L") === answers[i]) score++;
-    grade(i);
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
   }
-  document.getElementById("score").textContent = `得点：${score} / 15`;
+  return a;
 }
-</script>
 
+function start(){
+  idx = 0; ok = 0; ng = 0; streak = 0;
+  results = [];
+  questions = shuffle([...questionsBase]);
+  elTotal.textContent = questions.length;
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+  next();
+}
+
+function next(){
+  if (idx >= questions.length){
+    showResults();
+    return;
+  }
+  const item = questions[idx];
+  elQ.textContent = item.q;
+  elIdx.textContent = idx+1;
+  elSub.textContent = '左=借方 / 右=貸方（満点で🌸）';
+}
+
+function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
+
+let audioCtx = null;
+function beep(okFlag=true){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = okFlag ? 880 : 220;
+    g.gain.value = 0.02;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    setTimeout(()=>{ o.stop(); }, 120);
+  }catch(e){}
+}
+
+function judge(side){
+  if (idx >= questions.length) return;
+  const item = questions[idx];
+  const isOK = (side === item.correct);
+
+  results.push({
+    no: idx+1,
+    question: item.q,
+    answered: side,
+    correct: item.correct,
+    isOK
+  });
+
+  showFlash(isOK);
+  if (isOK){ ok++; streak++; vibrate(20); beep(true); }
+  else { ng++; streak=0; vibrate([30,40,30]); beep(false); }
+
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+
+  idx++;
+  setTimeout(next, 600);
+}
+
+function showFlash(isOK){
+  flash.className = isOK ? 'ok' : 'ng';
+  flash.textContent = isOK ? '⭕' : '❌';
+  flash.style.display = 'flex';
+  setTimeout(()=>{ flash.style.display='none'; }, 350);
+}
+
+function showResults(){
+  const total = questions.length;
+  const percent = total ? Math.round(ok / total * 100) : 0;
+
+  let growthHtml = "";
+  if (total > 0 && ok === total) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌸</div>
+        <div class="small-muted">全問正解！花が咲きました。</div>
+      </div>`;
+  } else if (ok <= 5) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌱</div>
+        <div class="small-muted">今日は種まきの日。少しずつ育てていきましょう。</div>
+      </div>`;
+  } else {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌿</div>
+        <div class="small-muted">芽が出てきました。続ければきっと満開になります。</div>
+      </div>`;
+  }
+
+  let html = "";
+  html += growthHtml;
+  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:700;">結果一覧</div>`;
+  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}（${percent}%）</div>`;
+
+  results.forEach(r => {
+    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
+    const badgeLabel = r.isOK ? '○' : '×';
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp = r.correct === 'left' ? '左' : '右';
+    html += `<div class="result-item">
+      <span class="badge ${badgeClass}">${badgeLabel}</span>
+      <strong>${r.no}. ${r.question}</strong><br>
+      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
+    </div>`;
+  });
+
+  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
+  results.forEach(r => {
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp = r.correct === 'left' ? '左' : '右';
+    const status = r.isOK ? "正解" : "不正解";
+    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
+    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
+  });
+
+  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
+  html += `<div style="margin-top:10px;">
+    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
+    <textarea readonly onclick="this.select()">${textReport}</textarea>
+  </div>`;
+
+  questionBox.innerHTML = html;
+  elIdx.textContent = total;
+  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
+}
+
+// イベント
+document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
+document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
+document.getElementById('btnStart').addEventListener('click', start);
+document.getElementById('btnReset').addEventListener('click', ()=>window.location.reload());
+
+// PC操作：Space=左、Enter/→=右、←=左
+window.addEventListener('keydown', (e)=>{
+  if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
+  else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
+  else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
+});
+</script>
 </body>
 </html>
