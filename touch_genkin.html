@@ -69,12 +69,24 @@
   .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
   .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
   .small-muted { font-size:11px; color:var(--muted); }
+/* ▼ indexへ戻る（左上） */
+.back-link{
+  font-size:12px;
+  color: var(--muted);
+  text-decoration:none;
+  border:1px solid #2b2f3a;
+  padding:4px 10px;
+  border-radius:999px;
+  display:inline-block;
+}
+.back-link:active{ opacity:.7; }
 </style>
 </head>
 
 <body>
 <div id="app">
   <header>
+    <a href="index.html" class="back-link">入口へ戻る</a>
     <h1>BokiExercise 左右タッチ即判定クイズ</h1>
     <div class="meta"><span class="pill">3級仕訳基礎0.現金のみ｜左=借方 / 右=貸方</span></div>
   </header>
