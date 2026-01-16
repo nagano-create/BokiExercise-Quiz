@@ -4,100 +4,45 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>BokiExercise 左右タッチ即判定クイズ</title>
+<title>BokiExercise-Quiz｜問題セット選択</title>
 <style>
-  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
+  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --card:#171a21; }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
-  #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
-  header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
-  header h1 { font-size: 16px; margin: 0; flex:1; }
-  header .meta { font-size:12px; color: var(--muted); }
-
-  #questionBox {
-    padding: 18px 16px;
-    text-align: center;                /* 中央寄せ */
-    font-size: clamp(20px, 6vw, 32px); /* 文字を大きくする */
-    line-height:1.4;
-    overflow-y:auto;
-    max-height: 40vh;
-  }
-  #question {
-    margin: 6px 0 4px;
-    font-weight: 600;                  /* 太字 */
-    text-align: center;                /* 中央寄せ */
-  }
-  #sub { font-size: 12px; color: var(--muted); }
-
-  #arena { flex:1; display:flex; }
-  .side { flex:1; display:flex; align-items:center; justify-content:center; font-size: clamp(28px, 8vw, 44px); font-weight:700; border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent; }
-  .left { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
-  .right { background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
-  .label { pointer-events: none; opacity:.9; }
-
-  #setSelectorBox { padding: 8px 16px; background: var(--card); font-size: 13px; display:flex; align-items:center; gap:8px; }
-  #setSelect { flex:1; padding: 6px 8px; border-radius: 6px; border:1px solid #2b2f3a; background:#0f1319; color:var(--fg); }
-
-  #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
-
-  #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
-  button { flex:1; padding: 12px; border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg); border-radius:10px; font-size:14px; }
-  button:active { transform: scale(.98); }
-
-  #flash {
-    position: fixed;
-    inset: 0;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    font-size: clamp(56px, 18vw, 120px); /* 〇✕をさらに大きく */
-    font-weight:900;
-    z-index: 10;
-  }
-  #flash.ok { background: rgba(29,185,84,.12); color: var(--ok); }
-  #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
-
-  #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
-  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
-
-  #importer { display:none; }
-  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
-  details { background: var(--card); margin: 0 16px 12px; padding: 10px 12px; border-radius: 10px; }
-  summary { cursor: pointer; font-weight: 600; }
-  code { background:#0f1319; padding:2px 6px; border-radius:6px; }
-
-  .result-item { font-size:14px; margin-bottom:8px; }
-  .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
-  .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
-  .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
-  .small-muted { font-size:11px; color:var(--muted); }
-
-  .growth-emoji {
-    font-size: 120px;
-    line-height: 1.1;
-  }
-  .growth-box {
-    text-align:center;
-    margin-bottom:12px;
-  }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif; }
+  #app { max-width: 720px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--card); border:1px solid #222; border-radius: 14px; padding: 14px; margin: 12px 0; }
+  h1 { font-size: 18px; margin: 6px 0 6px; }
+  .muted { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  label { font-size: 13px; color: var(--muted); display:block; margin-bottom: 8px; }
+  select { width:100%; padding: 10px 12px; border-radius: 10px; border:1px solid #2b2f3a; background:#0f1319; color:var(--fg); font-size: 15px; }
+  button { width:100%; margin-top: 10px; padding: 12px; border-radius: 12px; border:1px solid #2b2f3a; background:#1c222b; color:var(--fg); font-size: 15px; }
+  button:active { transform: scale(.99); }
+  .links a { color:#cdd3db; text-decoration: none; }
+  .links a:hover { text-decoration: underline; }
+  .pill { display:inline-block; padding:2px 10px; border:1px solid #2b2f3a; border-radius:999px; font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
-    <div class="meta"><span class="pill" id="modePill">左=借方 / 右=貸方</span></div>
-  </header>
 
-  <!-- ▼ セット選択プルダウン ▼ -->
-  <div id="setSelectorBox">
-    <span style="white-space:nowrap;">問題セット：</span>
+  <div class="card">
+    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
+    <div class="muted">
+      使いたい「問題セット」を選ぶと、そのままクイズ画面へ移動します。<br>
+      <span class="pill">左=借方 / 右=貸方</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <label for="setSelect">問題セット：</label>
     <select id="setSelect">
       <option value="standard">3級仕訳標準</option>
       <option value="genkin">3級仕訳基礎0.現金のみ</option>
       <option value="shouhin">3級仕訳基礎1.商品取引</option>
       <option value="kotei">3級仕訳基礎2.固定資産</option>
       <option value="keika">3級仕訳基礎3.経過勘定</option>
+
       <option value="zeikin">3級仕訳基礎4.税金・配当</option>
       <option value="kyuryo">3級仕訳基礎5.給料・福利</option>
       <option value="kashitsuke">3級仕訳基礎6.貸付・立替</option>
@@ -105,439 +50,61 @@
       <option value="shohi">3級仕訳基礎8.諸費・雑費</option>
       <option value="fudosan">3級仕訳基礎9.不動産</option>
       <option value="shisan">3級仕訳基礎10.純資産</option>
- </select>
-  </div>
+    </select>
 
-  <div id="questionBox">
-    <div id="question">スタートを押してください</div>
-    <div id="sub">会計ボキササイズ：左=借方（Debit）/ 右=貸方（Credit）</div>
-  </div>
+    <button id="goBtn">このセットで開始</button>
 
-  <div id="arena">
-    <div class="side left" id="leftSide" role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
-    <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
-  </div>
-
-  <div id="scoreBar">
-    <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
-    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
-  </div>
-
-  <div id="controls">
-    <button id="btnStart">スタート / シャッフル</button>
-    <button id="btnToggle">モード切替</button>
-    <button id="btnReset">リセット</button>
-  </div>
-
-  <details>
-    <summary>🔧 問題を差し替える（CSV/TSV貼り付け）</summary>
-    <p style="font-size:13px;color:#cdd3db;margin:6px 0 8px;">
-      1行に「問題文, 正解サイド(left|right)」の形式で貼り付けてください。TSVでもOK。例：<br>
-      <code>現金を増やす仕訳は？,left</code> / <code>売上は？,right</code>
-    </p>
-    <textarea id="importText" placeholder="例）&#10;現金を増やす仕訳は？,left&#10;売上は？,right"></textarea>
-    <div style="display:flex; gap:8px; margin-top:8px;">
-      <button id="btnPreview" style="flex:1;">プレビュー</button>
-      <button id="btnApply" style="flex:1;">適用</button>
+    <div class="muted" style="margin-top:10px;">
+      ※ 選んだのに移動しない場合は、その touch_***.html がまだ未作成です。
     </div>
-    <p id="importer" style="font-size:12px; color:#9aa0a6; margin-top:6px;"></p>
-  </details>
+  </div>
 
-  <div id="footerNote">© BokiExercise｜画面の左右どちらかをタップして即判定</div>
+  <div class="card links">
+    <div class="muted">直リンク（確認用）：</div>
+    <div class="muted" style="line-height:1.9;margin-top:6px;">
+      <a href="touch_standard.html">touch_standard.html</a><br>
+      <a href="touch_genkin.html">touch_genkin.html</a><br>
+      <a href="touch_shouhin.html">touch_shouhin.html</a><br>
+      <a href="touch_kotei.html">touch_kotei.html</a><br>
+      <a href="touch_keika.html">touch_keika.html</a><br>
+      <span class="muted">（4以降は作成後に自動で開けます）</span>
+    </div>
+  </div>
+
 </div>
 
-<div id="flash"></div>
-
 <script>
-// =======================
-// ▼ 問題セット定義 ▼
-// =======================
+const pages = {
+  standard: "touch_standard.html",
+  genkin: "touch_genkin.html",
+  shouhin: "touch_shouhin.html",
+  kotei: "touch_kotei.html",
+  keika: "touch_keika.html",
 
-// 3級仕訳標準（もともとの基本セット）
-const set_standard = [
-  { q: "資産（現金・売掛金など）が『増加』するのは？", correct: "left" },
-  { q: "資産（現金・売掛金など）が『減少』するのは？", correct: "right" },
-  { q: "負債（買掛金・借入金など）が『増加』するのは？", correct: "right" },
-  { q: "負債（買掛金・借入金など）が『減少』するのは？", correct: "left" },
-  { q: "資本・純資産（資本金・繰越利益剰余金など）が『増加』するのは？", correct: "right" },
-  { q: "費用（仕入・給料・減価償却費など）が『発生』するのは？", correct: "left" },
-  { q: "収益（売上・受取利息など）が『発生』するのは？", correct: "right" },
-  { q: "売上が計上されたときの『売上』は？", correct: "right" },
-  { q: "仕入で商品が増えたときの『仕入』は？", correct: "left" },
-  { q: "備品を現金で購入したときの『備品』は？", correct: "left" },
-  { q: "備品を現金で購入したときの『現金』は？", correct: "right" },
-  { q: "家賃を支払ったときの『支払家賃』は？", correct: "left" },
-  { q: "売掛金を回収して『現金』が増えたときは？", correct: "left" },
-  { q: "買掛金を支払って『買掛金』が減少したときは？", correct: "left" },
-  { q: "前受金が発生したときの『前受金』は？", correct: "right" }
-];
-
-// 3級仕訳基礎0.現金のみ
-const set_genkin = [
-  { q: "商品を現金で販売した。『現金』は？", correct: "left" },      // 現金
-  { q: "商品を現金で販売した。『売上』は？", correct: "right" },       // 売上
-  { q: "商品を現金で仕入れた。『仕入』は？", correct: "left" },        // 仕入
-  { q: "売掛金を現金で回収した。『売掛金』は？", correct: "right" },   // 売掛金
-  { q: "受取手形を満期に現金で回収した。『受取手形』は？", correct: "right" }, // 受取手形
-  { q: "買掛金を現金で支払った。『買掛金』は？", correct: "left" },    // 買掛金
-  { q: "支払手形を現金で決済した。『支払手形』は？", correct: "left" }, // 支払手形
-  { q: "給料を現金で支払った。『給料』は？", correct: "left" },       // 給料
-  { q: "建物を現金で購入した。『建物』は？", correct: "left" },        // 建物
-  { q: "備品を現金で購入した。『備品』は？", correct: "left" },        // 備品
-  { q: "未払金を現金で支払った。『現金』は？", correct: "right" },     // 現金
-  { q: "家賃を前もって現金で受け取ったときの『前受収益』は？", correct: "right" }, // 前受収益
-  { q: "未払費用を現金で払った。『未払費用』は？", correct: "left" }, // 未払費用
-  { q: "顧客から手付金として現金を受け取った。『前受金』は？", correct: "right" }, // 前受金
-  { q: "お金を数えたら足りなかった！『現金過不足』は？", correct: "left" } // 現金過不足
-];
-
-// 3級仕訳基礎1.商品取引（修正版15問）
-const set_shouhin = [
-  { q: "商品を現金で仕入れたときの『仕入』は？", correct: "left" },
-  { q: "商品を現金で仕入れたときの『現金』は？", correct: "right" },
-
-  { q: "掛けで商品を仕入れたときの『買掛金』は？", correct: "right" },
-  { q: "掛けで商品を仕入れたときの『仕入』は？", correct: "left" },
-
-  { q: "掛けで商品を販売したときの『売上』は？", correct: "right" },
-  { q: "掛けで商品を販売したときの『売掛金』は？", correct: "left" },
-
-  { q: "受取手形で売掛金を回収したときの『受取手形』は？", correct: "left" },
-  { q: "受取手形で売掛金を回収したときの『売掛金』は？", correct: "right" },
-
-  { q: "小切手で商品を販売したときの『現金』は？", correct: "left" },   // 小切手＝現金
-  { q: "小切手で商品を販売したときの『売上』は？", correct: "right" },
-
-  { q: "買掛金を支払手形で支払ったときの『支払手形』は？", correct: "right" },
-  { q: "買掛金を支払手形で支払ったときの『買掛金』は？", correct: "left" },
-
-  { q: "売掛金を現金で回収したときの『現金』は？", correct: "left" },
-  { q: "売掛金を現金で回収したときの『売掛金』は？", correct: "right" },
-
-  { q: "受け取っていた小切手を当座預金口座に預け入れたときの『当座預金』は？", correct: "left" }
-];
-
-// 3級仕訳基礎2.固定資産（15問）
-const set_kotei = [
-  { q: "建物を現金で購入したときの『建物』は？", correct: "left" },
-  { q: "建物を現金で購入したときの『現金』は？", correct: "right" },
-
-  { q: "備品を掛けで購入したときの『備品』は？", correct: "left" },
-  { q: "備品を掛けで購入したときの『未払金』は？", correct: "right" },
-
-  { q: "車両運搬具を現金で購入したときの『車両運搬具』は？", correct: "left" },
-  { q: "車両運搬具を現金で購入したときの『現金』は？", correct: "right" },
-
-  { q: "建物の減価償却費を計上したときの『減価償却費』は？", correct: "left" },
-  { q: "建物の減価償却費を計上したときの『減価償却累計額』は？", correct: "right" },
-
-  { q: "備品を売却し、売却益が出たときの『固定資産売却益』は？", correct: "right" },
-  { q: "備品を売却し、売却損が出たときの『固定資産売却損』は？", correct: "left" },
-
-  { q: "土地を売却し、現金を受け取ったときの『現金』は？", correct: "left" },
-  { q: "土地を売却したときの『土地』は？", correct: "right" },
-
-  { q: "減価償却を『間接法』でした。『減価償却累計額』は？", correct: "right" },
-  { q: "減価償却を『直接法』でした。『建物』はどちら側？", correct: "right" },
-
-  { q: "備品を掛けで購入していた未払金を、後日現金で支払った。『未払金』は？", correct: "left" }
-];
-
-// 3級仕訳基礎3.経過勘定（15問）
-const set_keika = [
-  { q: "家賃を現金で支払ったときの『支払家賃』は？", correct: "left" },           // 支払家賃
-  { q: "地代を現金で支払ったときの『支払地代』は？", correct: "left" },             // 支払地代
-  { q: "給料を当月分として現金で支払ったときの『給料』は？", correct: "left" },     // 給料
-  { q: "1年分の保険料をまとめて現金で支払ったときの『保険料』は？", correct: "left" }, // 保険料
-  { q: "家賃を前もって受け取り『前受収益』が発生したときの『前受収益』は？", correct: "right" }, // 前受収益
-  { q: "地代を前もって受け取り『前受収益』として処理したときの『前受収益』は？", correct: "right" }, // 前受収益
-  { q: "決算で前受収益のうち当期分を『受取家賃』に振り替えるときの『受取家賃』は？", correct: "right" }, // 受取家賃
-  { q: "決算で前受収益のうち当期分を『受取地代』に振り替えるときの『受取地代』は？", correct: "right" }, // 受取地代
-  { q: "決算で当期に発生しているがまだ支払っていない給料を計上するときの『未払費用』は？", correct: "right" }, // 未払費用
-  { q: "決算で当期に発生しているがまだ支払っていない給料を計上するときの『給料』は？", correct: "left" },      // 給料
-  { q: "決算で当期に発生しているがまだ支払っていない利息を計上するときの『支払利息』は？", correct: "left" },    // 支払利息
-  { q: "決算で当期に発生しているがまだ支払っていない利息を計上するときの『未払費用』は？", correct: "right" },   // 未払費用
-  { q: "決算で当期に発生しているがまだ受け取っていない利息を計上するときの『受取利息』は？", correct: "right" }, // 受取利息
-  { q: "決算で保険料のうち来期以降の分を資産に振り替えるとき、費用から振り替える『保険料』は？", correct: "right" }, // 保険料（貸方）
-  { q: "地代を前受けしていたうち当期分を収益として振り替えるときの『前受収益』は？", correct: "left" }         // 前受収益
-];
-
-// セット一覧（プルダウン用）
-const questionSets = {
-  standard: { label: "3級仕訳標準", questions: set_standard },
-  genkin:   { label: "3級仕訳基礎0.現金のみ", questions: set_genkin },
-  shouhin:  { label: "3級仕訳基礎1.商品取引", questions: set_shouhin },
-  kotei:    { label: "3級仕訳基礎2.固定資産", questions: set_kotei },
-  keika:    { label: "3級仕訳基礎3.経過勘定", questions: set_keika }
+  zeikin: "touch_zeikin.html",
+  kyuryo: "touch_kyuryo.html",
+  kashitsuke: "touch_kashitsuke.html",
+  kariire: "touch_kariire.html",
+  shohi: "touch_shohi.html",
+  fudosan: "touch_fudosan.html",
+  shisan: "touch_shisan.html",
 };
 
-// =======================
-// ▼ 共通ロジック ▼
-// =======================
+const setSelect = document.getElementById("setSelect");
+const goBtn = document.getElementById("goBtn");
 
-let selectedSetKey = 'standard';
-let questions = JSON.parse(JSON.stringify(questionSets[selectedSetKey].questions));
-let defaultQuestions = JSON.parse(JSON.stringify(questionSets[selectedSetKey].questions));
-
-let idx = 0, ok = 0, ng = 0, streak = 0;
-let mode = 'debitLeft'; // 'debitLeft' or 'swap'
-let results = []; // 問題ごとの結果保存
-
-const elQ = document.getElementById('question');
-const elSub = document.getElementById('sub');
-const elIdx = document.getElementById('idx');
-const elTotal = document.getElementById('total');
-const elOk = document.getElementById('ok');
-const elNg = document.getElementById('ng');
-const elStreak = document.getElementById('streak');
-const flash = document.getElementById('flash');
-const modePill = document.getElementById('modePill');
-const questionBox = document.getElementById('questionBox');
-const setSelect = document.getElementById('setSelect');
-
-// 初期表示の総問数
-elTotal.textContent = questions.length;
-
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
-
-function start(){
-  idx = 0; ok = 0; ng = 0; streak = 0;
-  results = [];
-  questions = shuffle([...questions]);
-  elTotal.textContent = questions.length;
-  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
-  next();
-}
-
-function next(){
-  if (idx >= questions.length){
-    showResults();
+function go(){
+  const key = setSelect.value;
+  const url = pages[key];
+  if(!url){
+    alert("対応ファイルが見つかりません。");
     return;
   }
-  const item = questions[idx];
-  elQ.textContent = item.q;
-  elIdx.textContent = idx+1;
-  elSub.textContent = (mode==='debitLeft') ? '左=借方 / 右=貸方' : '左=貸方 / 右=借方';
+  location.href = url;
 }
 
-function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
-
-// 簡易ビープ（初回ユーザー操作後のみ作動）
-let audioCtx = null;
-function beep(okFlag=true){
-  try{
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = 'sine';
-    o.frequency.value = okFlag ? 880 : 220;
-    g.gain.value = 0.02;
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start();
-    setTimeout(()=>{ o.stop(); }, 120);
-  }catch(e){ /* ignore */ }
-}
-
-function judge(side){
-  if (idx >= questions.length) return;
-  const item = questions[idx];
-  let effectiveCorrect = item.correct;
-  // モードがswapの場合は左右を反転
-  if (mode === 'swap') effectiveCorrect = (effectiveCorrect==='left'?'right':'left');
-  const isOK = (side === effectiveCorrect);
-
-  // 結果保存（もとの正解も残しておく）
-  results.push({
-    no: idx+1,
-    question: item.q,
-    answered: side,
-    correct: effectiveCorrect,
-    baseCorrect: item.correct,
-    isOK: isOK
-  });
-
-  showFlash(isOK);
-  if (isOK){ ok++; streak++; vibrate(20); beep(true); }
-  else { ng++; streak=0; vibrate([30,40,30]); beep(false); }
-
-  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
-
-  idx++;
-  // 「ため」を少し長めに（0.6秒）
-  setTimeout(next, 600);
-}
-
-function showFlash(isOK){
-  flash.className = isOK ? 'ok' : 'ng';
-  flash.textContent = isOK ? '⭕' : '❌';
-  flash.style.display = 'flex';
-  setTimeout(()=>{ flash.style.display='none'; }, 350);
-}
-
-// 結果一覧表示
-function showResults(){
-  const total = questions.length;
-  const percent = total ? Math.round(ok / total * 100) : 0;
-
-  // 成長ステージ表示（種・芽・花）
-  let growthHtml = "";
-  if (total > 0 && ok === total) {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌸</div>
-        <div class="small-muted">全問正解！花が咲きました。</div>
-      </div>
-    `;
-  } else if (ok <= 5) {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌱</div>
-        <div class="small-muted">今日は種まきの日。少しずつ育てていきましょう。</div>
-      </div>
-    `;
-  } else {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌿</div>
-        <div class="small-muted">芽が出てきました。続ければきっと満開になります。</div>
-      </div>
-    `;
-  }
-
-  // HTML表示用
-  let html = "";
-  html += growthHtml;
-  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
-  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
-
-  results.forEach(r => {
-    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
-    const badgeLabel = r.isOK ? '○' : '×';
-    const answeredJp = r.answered === 'left' ? '左' : '右';
-    const correctJp = r.correct === 'left' ? '左' : '右';
-
-    html += `<div class="result-item">
-      <span class="badge ${badgeClass}">${badgeLabel}</span>
-      <strong>${r.no}. ${r.question}</strong><br>
-      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
-    </div>`;
-  });
-
-  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
-
-  // コピー用テキスト（CSV風）
-  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
-  results.forEach(r => {
-    const answeredJp = r.answered === 'left' ? '左' : '右';
-    const correctJp = r.correct === 'left' ? '左' : '右';
-    const status = r.isOK ? "正解" : "不正解";
-    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
-    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
-  });
-
-  html += `<div style="margin-top:10px;">
-    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
-    <textarea readonly onclick="this.select()">${textReport}</textarea>
-  </div>`;
-
-  questionBox.innerHTML = html;
-  elIdx.textContent = total;
-  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
-}
-
-// クリック・キー操作
-document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
-document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
-document.getElementById('btnStart').addEventListener('click', start);
-document.getElementById('btnReset').addEventListener('click', ()=>{
-  window.location.reload();
-});
-
-document.getElementById('btnToggle').addEventListener('click', ()=>{
-  mode = (mode==='debitLeft') ? 'swap' : 'debitLeft';
-  modePill.textContent = (mode==='debitLeft') ? '左=借方 / 右=貸方' : '左=貸方 / 右=借方（反転）';
-  elSub.textContent = (mode==='debitLeft') ? '左=借方 / 右=貸方' : '左=貸方 / 右=借方';
-});
-
-// セット選択が変わったとき
-setSelect.addEventListener('change', ()=>{
-  const key = setSelect.value;
-  selectedSetKey = key;
-  questions = JSON.parse(JSON.stringify(questionSets[key].questions));
-  defaultQuestions = JSON.parse(JSON.stringify(questionSets[key].questions));
-
-  idx = 0; ok = 0; ng = 0; streak = 0; results = [];
-  elIdx.textContent = 0;
-  elTotal.textContent = questions.length;
-  elOk.textContent = 0;
-  elNg.textContent = 0;
-  elStreak.textContent = 0;
-  elQ.textContent = 'スタートを押してください';
-  elSub.textContent = '会計ボキササイズ：左=借方（Debit）/ 右=貸方（Credit）';
-  questionBox.scrollTop = 0;
-});
-
-// --- インポート（CSV/TSV） ---
-const importText = document.getElementById('importText');
-const importerMsg = document.getElementById('importer');
-
-document.getElementById('btnPreview').addEventListener('click', ()=>{
-  try{
-    const parsed = parseQA(importText.value);
-    importerMsg.style.display='block';
-    importerMsg.textContent = `読み込み候補：${parsed.length} 問`;
-  }catch(e){
-    importerMsg.style.display='block';
-    importerMsg.textContent = 'エラー：' + e.message;
-  }
-});
-
-document.getElementById('btnApply').addEventListener('click', ()=>{
-  try{
-    const parsed = parseQA(importText.value);
-    questions = parsed;
-    defaultQuestions = JSON.parse(JSON.stringify(parsed));
-    importerMsg.style.display='block';
-    importerMsg.textContent = `適用しました：${parsed.length} 問`;
-    idx = 0; ok = 0; ng = 0; streak = 0; results = [];
-    elIdx.textContent = 0;
-    elTotal.textContent = questions.length;
-    elOk.textContent = 0; elNg.textContent = 0; elStreak.textContent = 0;
-    elQ.textContent = 'スタートを押してください';
-    elSub.textContent = '左=借方 / 右=貸方';
-  }catch(e){
-    importerMsg.style.display='block';
-    importerMsg.textContent = 'エラー：' + e.message;
-  }
-});
-
-function parseQA(text){
-  const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const out = [];
-  for(const line of lines){
-    const parts = line.split(/[\t,]/).map(s=>s.trim());
-    if (parts.length < 2) throw new Error(`区切り記号が見つかりません：${line}`);
-    const side = parts[parts.length-1].toLowerCase();
-    const q = parts.slice(0, parts.length-1).join(' ');
-    if (side!=='left' && side!=='right') throw new Error(`正解サイドは left / right で指定してください：${line}`);
-    out.push({ q, correct: side });
-  }
-  if (!out.length) throw new Error('問題が空です');
-  return out;
-}
-
-// スペースキーで左、Enter/矢印で右（PC授業向け）
-window.addEventListener('keydown', (e)=>{
-  if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
-  else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
-  else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
-});
+setSelect.addEventListener("change", go);
+goBtn.addEventListener("click", go);
 </script>
 </body>
 </html>
