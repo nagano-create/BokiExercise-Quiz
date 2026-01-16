@@ -13,9 +13,50 @@
     "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
   #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
 
-  header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
+  /* ▼ ヘッダーをstickyに（Topを常に左上に置けるように） */
+  header{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 12px 16px;
+    background: var(--card);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
   header h1 { font-size: 16px; margin: 0; flex:1; }
+
   .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
+
+  /* ▼ Topボタン（左上・常時見える） */
+  .top-link{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    text-decoration:none;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid #2b2f3a;
+    color: var(--fg);
+    background: rgba(15,19,25,.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    transition: opacity .18s ease, transform .18s ease, background .18s ease, border-color .18s ease;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* 問題中：半透明 */
+  .top-link.is-dim{ opacity:.55; }
+  /* 結果画面：強調 */
+  .top-link.is-strong{
+    opacity: 1;
+    background: rgba(29,185,84,.14);
+    border-color: rgba(29,185,84,.45);
+    box-shadow: 0 10px 26px rgba(29,185,84,.10), 0 10px 26px rgba(0,0,0,.25);
+  }
+  .top-link:active{ transform: scale(.98); }
 
   #questionBox {
     padding: 18px 16px;
@@ -66,24 +107,12 @@
   .growth-emoji { font-size: 120px; line-height: 1.1; }
   .growth-box { text-align:center; margin-bottom:12px; }
   textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
-/* ▼ indexへ戻る（左上） */
-.back-link{
-  font-size:12px;
-  color: var(--muted);
-  text-decoration:none;
-  border:1px solid #2b2f3a;
-  padding:4px 10px;
-  border-radius:999px;
-  display:inline-block;
-}
-.back-link:active{ opacity:.7; }
-
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <a href="index.html">Top</a>
+    <a href="index.html" class="top-link is-dim" id="topLink" aria-label="Topへ戻る">Top</a>
     <h1>BokiExercise 左右タッチ即判定クイズ</h1>
     <div class="pill">標準</div>
   </header>
@@ -148,8 +177,17 @@ const elNg = document.getElementById('ng');
 const elStreak = document.getElementById('streak');
 const flash = document.getElementById('flash');
 const questionBox = document.getElementById('questionBox');
+const topLink = document.getElementById('topLink');
 
 elTotal.textContent = questions.length;
+
+function setTopEmphasis(mode){
+  // mode: "quiz" | "result"
+  if (!topLink) return;
+  topLink.classList.remove('is-dim','is-strong');
+  if (mode === 'result') topLink.classList.add('is-strong');
+  else topLink.classList.add('is-dim');
+}
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -160,6 +198,8 @@ function shuffle(a){
 }
 
 function start(){
+  setTopEmphasis('quiz');
+
   idx = 0; ok = 0; ng = 0; streak = 0;
   results = [];
   questions = shuffle([...questions]);
@@ -228,6 +268,8 @@ function showFlash(isOK){
 }
 
 function showResults(){
+  setTopEmphasis('result');
+
   const total = questions.length;
   const percent = total ? Math.round(ok / total * 100) : 0;
 
@@ -296,9 +338,15 @@ function showResults(){
 
 // UI操作
 document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
+document.getElementById('rightSide').addEventListener('click', startIfNeededThen(()=>judge('left')));
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
 document.getElementById('btnStart').addEventListener('click', start);
 document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
+
+// 右Sideのイベントが二重にならないように（念のため）
+function startIfNeededThen(fn){
+  return ()=>fn();
+}
 
 // PC授業向け：Space=左 / Enter,→=右 / ←=左
 window.addEventListener('keydown', (e)=>{
@@ -306,6 +354,9 @@ window.addEventListener('keydown', (e)=>{
   else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
   else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
 });
+
+// 初期は「問題中扱い」で半透明
+setTopEmphasis('quiz');
 </script>
 </body>
 </html>
