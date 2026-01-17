@@ -1,330 +1,341 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>日商簿記3級 仕訳 基礎3（経過勘定）タッチ</title>
-  <style>
-    :root{
-      --bg:#0b1220; --card:#111a2e; --bd:#24324f; --txt:#eaf0ff; --mut:#a9b6d6;
-      --ok:#34d399; --ng:#fb7185; --shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
-      background:linear-gradient(180deg, #070b14 0%, var(--bg) 40%, #070b14 100%);
-      color:var(--txt);
-    }
-    .wrap{max-width:980px; margin:0 auto; padding:16px;}
-    h1{font-size:18px; margin:6px 0 6px;}
-    .sub{color:var(--mut); font-size:12px; line-height:1.55; margin:0 0 12px;}
-    .topbar{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
-      border-radius:14px; padding:10px 12px; box-shadow:var(--shadow);
-      position:sticky; top:10px; z-index:5; backdrop-filter: blur(6px);
-    }
-    .topbar a{
-      color:var(--txt); text-decoration:none; border:1px solid rgba(255,255,255,.12);
-      padding:8px 10px; border-radius:12px; background:rgba(255,255,255,.04);
-      font-size:12px;
-    }
-    .btn{
-      border:1px solid rgba(255,255,255,.14);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      color:var(--txt); padding:10px 12px; border-radius:14px;
-      cursor:pointer; font-weight:700; font-size:13px;
-    }
-    .btn:hover{background:rgba(255,255,255,.08)}
-    .score{font-weight:800;}
-    .hint{color:var(--mut); font-size:12px;}
-    .q{
-      margin:14px 0; padding:12px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px; box-shadow:var(--shadow);
-    }
-    .qhead{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
-    .qid{font-weight:900; font-size:14px;}
-    .tag{font-size:11px; color:#dbe6ff; border:1px solid rgba(255,255,255,.14); padding:2px 8px; border-radius:999px; opacity:.9;}
-    .qtext{margin:10px 0 10px; line-height:1.6; color:#f3f6ff;}
-    .lr{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-    @media (max-width: 520px){ .lr{grid-template-columns:1fr;} }
-    .side{
-      background:rgba(0,0,0,.18);
-      border:1px dashed rgba(255,255,255,.14);
-      border-radius:16px; padding:10px;
-    }
-    .side h3{margin:0 0 8px; font-size:13px; color:#eaf0ff;}
-    .chips{display:flex; flex-wrap:wrap; gap:8px;}
-    .chip{
-      padding:9px 10px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      cursor:pointer; user-select:none; font-size:13px; font-weight:700;
-      transition: transform .05s ease;
-    }
-    .chip:active{transform: scale(.98);}
-    .chip.selL{outline:2px solid rgba(239,68,68,.9); background:rgba(239,68,68,.12);}
-    .chip.selR{outline:2px solid rgba(59,130,246,.9); background:rgba(59,130,246,.12);}
-    .picked{margin-top:10px; font-size:12px; color:var(--mut); line-height:1.5;}
-    .picked b{color:#fff;}
-    .actions{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-    .result{font-weight:900;}
-    .ok{color:var(--ok);}
-    .ng{color:var(--ng);}
-    details{margin-top:10px;}
-    summary{cursor:pointer; font-weight:900; color:#eaf0ff;}
-    .exp{margin-top:8px; color:#eaf0ff; line-height:1.65; font-size:13px;}
-    .exp code{background:rgba(255,255,255,.08); padding:2px 6px; border-radius:8px;}
-    .bottombar{
-      margin:18px 0 40px;
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      justify-content:space-between;
-      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
-      border-radius:14px; padding:10px 12px; box-shadow:var(--shadow);
-    }
-    .burst{position:fixed; inset:0; pointer-events:none; overflow:hidden;}
-    .petal{
-      position:absolute; top:-10vh; font-size:18px; opacity:.95;
-      animation: fall linear forwards;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,.25));
-    }
-    @keyframes fall{
-      to{ transform: translateY(120vh) rotate(540deg); opacity:0.9; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BokiExercise 左右タッチ即判定クイズ（基礎3：経過勘定）</title>
+<style>
+  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
+    "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
+
+  #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
+
+  header{
+    padding: 12px 16px;
+    background: var(--card);
+    display:flex; align-items:center; gap:10px;
+    position: sticky; top: 0; z-index: 20;
+  }
+  header h1 { font-size: 16px; margin: 0; flex:1; line-height: 1.2; }
+  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); white-space:nowrap; }
+
+  .top-link{
+    font-size:12px;
+    color: var(--muted);
+    text-decoration:none;
+    border:1px solid #2b2f3a;
+    padding:4px 10px;
+    border-radius:999px;
+    display:inline-block;
+    white-space:nowrap;
+    opacity:.65;
+    background: rgba(15,19,25,.35);
+  }
+  .top-link:active{ opacity:.7; transform: scale(.98); }
+  body.results-mode .top-link{
+    opacity: 1;
+    color: var(--fg);
+    border-color: #3a4252;
+    background: rgba(28,34,43,.85);
+  }
+
+  #questionBox {
+    padding: 18px 16px;
+    text-align: center;
+    font-size: clamp(20px, 6vw, 32px);
+    line-height:1.4;
+    overflow-y:auto;
+    max-height: 40vh;
+  }
+  #question { margin: 6px 0 4px; font-weight: 600; text-align: center; }
+  #sub { font-size: 12px; color: var(--muted); }
+
+  #arena { flex:1; display:flex; }
+  .side {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(28px, 8vw, 44px); font-weight:700;
+    border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .left  { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .right { background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .label { pointer-events: none; opacity:.9; }
+
+  #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
+
+  #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
+  button {
+    flex:1; padding: 12px;
+    border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
+    border-radius:10px; font-size:14px; cursor:pointer;
+  }
+  button:active { transform: scale(.98); }
+
+  #flash {
+    position: fixed; inset: 0; display:none; align-items:center; justify-content:center;
+    font-size: clamp(56px, 18vw, 120px);
+    font-weight:900; z-index: 30;
+  }
+  #flash.ok { background: rgba(29,185,84,.12); color: var(--ok); }
+  #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
+
+  #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
+
+  .result-item { font-size:14px; margin-bottom:8px; text-align:left; }
+  .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
+  .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
+  .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
+  .small-muted { font-size:11px; color:var(--muted); }
+
+  .growth-emoji { font-size: 120px; line-height: 1.1; }
+  .growth-box { text-align:center; margin-bottom:12px; }
+
+  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>日商簿記3級 仕訳 基礎3（経過勘定）タッチ（15問）</h1>
-    <p class="sub">
-      ルール：各問で <b>左（借方）</b> と <b>右（貸方）</b> を1つずつタッチ。<br>
-      経過勘定：<b>前払</b>（払ったが費用まだ）／<b>未払</b>（費用発生だが払ってない）／<b>未収</b>（収益発生だが入金まだ）／<b>前受</b>（入金したが収益まだ）
-    </p>
+<div id="app">
+  <header>
+    <a class="top-link" href="index.html">Top</a>
+    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
+    <div class="pill">3級仕訳基礎3.経過勘定</div>
+  </header>
 
-    <div class="topbar">
-      <button class="btn" id="gradeAll">15問まとめて採点</button>
-      <span class="score">得点：<span id="score">-</span> / 15</span>
-      <span class="hint">※各問「この1問を採点」も可</span>
-      <a href="./touch_kotei.html">← 基礎2（固定資産）へ</a>
-      <a href="./touch_shouhin.html">基礎1（商品取引）へ</a>
-      <a href="./index.html">標準モードへ →</a>
-    </div>
-
-    <div id="app"></div>
-
-    <div class="bottombar">
-      <button class="btn" id="gradeAll2">15問まとめて採点</button>
-      <div class="score">得点：<span id="score2">-</span> / 15</div>
-    </div>
+  <div id="questionBox">
+    <div id="question">スタートを押してください</div>
+    <div id="sub">※ 左右＝借方/貸方。満点で🌸演出。</div>
   </div>
 
-  <div class="burst" id="burst"></div>
+  <div id="arena">
+    <div class="side left"  id="leftSide"  role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
+    <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
+  </div>
+
+  <div id="scoreBar">
+    <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
+    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
+  </div>
+
+  <div id="controls">
+    <button id="btnStart">スタート / シャッフル</button>
+    <button id="btnReset">リセット</button>
+  </div>
+
+  <div id="footerNote">© BokiExercise</div>
+</div>
+
+<div id="flash"></div>
 
 <script>
-/**
- * 基礎3（経過勘定）
- * 左1つ / 右1つ の反射練習
- * ※ここでは「未払家賃/前払家賃/未収家賃/前受家賃」など具体科目も混ぜています
- */
-const QUESTIONS = [
-  {id:1, tag:"易", q:"家賃を前払いした。", opts:["前払家賃","現金","支払家賃","未払家賃","前受家賃","未収家賃"], ans:{L:"前払家賃", R:"現金"},
-   exp:"解説：現金↓減。費用はまだ→前払。\n答：前払家賃 ／ 現金"},
-  {id:2, tag:"易", q:"家賃を後払いとした。", opts:["支払家賃","未払家賃","現金","前払家賃","未払金","前受家賃"], ans:{L:"支払家賃", R:"未払家賃"},
-   exp:"解説：現金はまだ。費用発生→未払。\n答：支払家賃 ／ 未払家賃"},
-  {id:3, tag:"易", q:"受取家賃を前受けした。", opts:["現金","前受家賃","受取家賃","未収家賃","前払家賃","未払家賃"], ans:{L:"現金", R:"前受家賃"},
-   exp:"解説：現金↑増。収益はまだ→前受。\n答：現金 ／ 前受家賃"},
-  {id:4, tag:"易", q:"受取家賃を掛け（後日受取）とした。", opts:["未収家賃","受取家賃","現金","前受家賃","未収金","売掛金"], ans:{L:"未収家賃", R:"受取家賃"},
-   exp:"解説：現金はまだ。収益発生→未収。\n答：未収家賃 ／ 受取家賃"},
-  {id:5, tag:"易", q:"前払家賃を支払家賃に振り替えた（当期分）。", opts:["支払家賃","前払家賃","現金","未払家賃","前受家賃","未収家賃"], ans:{L:"支払家賃", R:"前払家賃"},
-   exp:"解説：前払→費用化。\n答：支払家賃 ／ 前払家賃"},
+/* =======================
+   基礎3：経過勘定（15問）
+   ※ 左=借方 / 右=貸方
+======================= */
+const set_keika = [
+  // 支払った（費用は左）
+  { q: "家賃を現金で支払ったときの『支払家賃』は？", correct: "left" },
+  { q: "地代を現金で支払ったときの『支払地代』は？", correct: "left" },
+  { q: "給料を当月分として現金で支払ったときの『給料』は？", correct: "left" },
+  { q: "1年分の保険料をまとめて現金で支払ったときの『保険料』は？", correct: "left" },
 
-  {id:6, tag:"中", q:"未払家賃を支払家賃に振り替えた（当期分）。", opts:["支払家賃","未払家賃","現金","前払家賃","未払金","前受家賃"], ans:{L:"支払家賃", R:"未払家賃"},
-   exp:"解説：未払（負債）を費用として確定。\n答：支払家賃 ／ 未払家賃"},
-  {id:7, tag:"中", q:"前受家賃を受取家賃に振り替えた（当期分）。", opts:["前受家賃","受取家賃","現金","未収家賃","前払家賃","未払家賃"], ans:{L:"前受家賃", R:"受取家賃"},
-   exp:"解説：前受→収益化。\n答：前受家賃 ／ 受取家賃"},
-  {id:8, tag:"中", q:"未収家賃を現金で回収した。", opts:["現金","未収家賃","受取家賃","前受家賃","未収金","売掛金"], ans:{L:"現金", R:"未収家賃"},
-   exp:"解説：未収が現金になった。\n答：現金 ／ 未収家賃"},
-  {id:9, tag:"中", q:"未払家賃を現金で支払った。", opts:["未払家賃","現金","支払家賃","前払家賃","未払金","前受家賃"], ans:{L:"未払家賃", R:"現金"},
-   exp:"解説：未払を現金で決済。\n答：未払家賃 ／ 現金"},
-  {id:10, tag:"中", q:"保険料を前払いした。", opts:["前払保険料","現金","保険料","未払保険料","前受金","未収金"], ans:{L:"前払保険料", R:"現金"},
-   exp:"解説：現金↓減。費用はまだ→前払。\n答：前払保険料 ／ 現金"},
+  // 前受収益（負債は右）
+  { q: "家賃を前もって受け取り『前受収益』が発生したときの『前受収益』は？", correct: "right" },
+  { q: "地代を前もって受け取り『前受収益』として処理したときの『前受収益』は？", correct: "right" },
 
-  {id:11, tag:"難", q:"保険料を後払いとした。", opts:["保険料","未払金","現金","未払費用","前払費用","前受金"], ans:{L:"保険料", R:"未払費用"},
-   exp:"解説：現金はまだ。費用発生→未払費用。\n答：保険料 ／ 未払費用"},
-  {id:12, tag:"難", q:"前払保険料を保険料に振り替えた（当期分）。", opts:["保険料","前払保険料","現金","未払費用","前受金","未収金"], ans:{L:"保険料", R:"前払保険料"},
-   exp:"解説：前払→費用化。\n答：保険料 ／ 前払保険料"},
-  {id:13, tag:"難", q:"利息を未収として計上した。", opts:["未収利息","受取利息","現金","前受利息","未払利息","支払利息"], ans:{L:"未収利息", R:"受取利息"},
-   exp:"解説：現金はまだ。収益発生→未収。\n答：未収利息 ／ 受取利息"},
-  {id:14, tag:"難", q:"利息を前受けした。", opts:["現金","前受利息","受取利息","未収利息","支払利息","未払利息"], ans:{L:"現金", R:"前受利息"},
-   exp:"解説：現金↑増。収益はまだ→前受。\n答：現金 ／ 前受利息"},
-  {id:15, tag:"難", q:"給料を未払として計上した。", opts:["給料","未払費用","現金","未払金","前払費用","仮払金"], ans:{L:"給料", R:"未払費用"},
-   exp:"解説：現金はまだ。費用発生→未払費用。\n答：給料 ／ 未払費用"},
+  // 決算：前受収益→当期分を収益へ（収益は右）
+  { q: "決算で前受収益のうち当期分を『受取家賃』に振り替えるときの『受取家賃』は？", correct: "right" },
+  { q: "決算で前受収益のうち当期分を『受取地代』に振り替えるときの『受取地代』は？", correct: "right" },
+
+  // 決算：未払費用（負債は右、費用は左）
+  { q: "決算で当期に発生しているがまだ支払っていない給料を計上するときの『未払費用』は？", correct: "right" },
+  { q: "決算で当期に発生しているがまだ支払っていない給料を計上するときの『給料』は？", correct: "left" },
+
+  { q: "決算で当期に発生しているがまだ支払っていない利息を計上するときの『支払利息』は？", correct: "left" },
+  { q: "決算で当期に発生しているがまだ支払っていない利息を計上するときの『未払費用』は？", correct: "right" },
+
+  // 決算：未収収益（資産は左、収益は右）
+  { q: "決算で当期に発生しているがまだ受け取っていない利息を計上するときの『未収収益』は？", correct: "left" },
+  { q: "決算で当期に発生しているがまだ受け取っていない利息を計上するときの『受取利息』は？", correct: "right" },
+
+  // 決算：前払費用（資産は左）※保険料の繰延
+  { q: "決算で保険料のうち来期以降の分を資産に振り替えるときの『前払費用』は？", correct: "left" }
 ];
 
-const app = document.getElementById("app");
-const burst = document.getElementById("burst");
+let questions = JSON.parse(JSON.stringify(set_keika));
+let idx = 0, ok = 0, ng = 0, streak = 0;
+let results = [];
 
-function makeChip(text, side, onPick){
-  const el = document.createElement("div");
-  el.className = "chip";
-  el.textContent = text;
-  el.addEventListener("click", () => onPick(text, el, side));
-  return el;
-}
+const elQ = document.getElementById('question');
+const elSub = document.getElementById('sub');
+const elIdx = document.getElementById('idx');
+const elTotal = document.getElementById('total');
+const elOk = document.getElementById('ok');
+const elNg = document.getElementById('ng');
+const elStreak = document.getElementById('streak');
+const flash = document.getElementById('flash');
+const questionBox = document.getElementById('questionBox');
 
-function render(){
-  app.innerHTML = "";
-  QUESTIONS.forEach(q => {
-    const card = document.createElement("div");
-    card.className = "q";
-    card.dataset.qid = q.id;
+elTotal.textContent = questions.length;
 
-    const head = document.createElement("div");
-    head.className = "qhead";
-    head.innerHTML = `<div class="qid">【${q.id}】<span class="tag">${q.tag}</span></div>`;
-
-    const qtext = document.createElement("div");
-    qtext.className = "qtext";
-    qtext.textContent = q.q;
-
-    const lr = document.createElement("div");
-    lr.className = "lr";
-
-    const left = document.createElement("div");
-    left.className = "side";
-    left.innerHTML = `<h3>左（借方）</h3>`;
-
-    const right = document.createElement("div");
-    right.className = "side";
-    right.innerHTML = `<h3>右（貸方）</h3>`;
-
-    const picked = document.createElement("div");
-    picked.className = "picked";
-    picked.innerHTML = `選択：<b class="pickL">（未選択）</b> ／ <b class="pickR">（未選択）</b>`;
-
-    const chipsL = document.createElement("div");
-    chipsL.className = "chips";
-    const chipsR = document.createElement("div");
-    chipsR.className = "chips";
-
-    let pickedL = null, pickedR = null;
-    let pickedLEl = null, pickedREl = null;
-
-    const updatePicked = () => {
-      card.querySelector(".pickL").textContent = pickedL || "（未選択）";
-      card.querySelector(".pickR").textContent = pickedR || "（未選択）";
-    };
-
-    const onPick = (text, el, side) => {
-      if (side === "L"){
-        if (pickedLEl) pickedLEl.classList.remove("selL");
-        pickedL = text; pickedLEl = el;
-        el.classList.add("selL");
-      } else {
-        if (pickedREl) pickedREl.classList.remove("selR");
-        pickedR = text; pickedREl = el;
-        el.classList.add("selR");
-      }
-      updatePicked();
-    };
-
-    q.opts.forEach(opt => chipsL.appendChild(makeChip(opt,"L",onPick)));
-    q.opts.forEach(opt => chipsR.appendChild(makeChip(opt,"R",onPick)));
-
-    left.appendChild(chipsL);
-    right.appendChild(chipsR);
-
-    lr.appendChild(left);
-    lr.appendChild(right);
-
-    const actions = document.createElement("div");
-    actions.className = "actions";
-    const btn = document.createElement("button");
-    btn.className = "btn";
-    btn.textContent = "この1問を採点";
-    const res = document.createElement("span");
-    res.className = "result";
-
-    const details = document.createElement("details");
-    const summary = document.createElement("summary");
-    summary.textContent = "解答・解説を見る";
-    const exp = document.createElement("div");
-    exp.className = "exp";
-    const expLines = q.exp.split("\n");
-    exp.innerHTML = `解説：${expLines[0].replace("解説：","")}<br>答：<code>${expLines[1].replace("答：","")}</code>`;
-    details.appendChild(summary);
-    details.appendChild(exp);
-
-    const grade = () => {
-      const ok = (pickedL === q.ans.L) && (pickedR === q.ans.R);
-      res.textContent = ok ? "正解" : "不正解";
-      res.classList.remove("ok","ng");
-      res.classList.add(ok ? "ok" : "ng");
-      details.open = true;
-      return ok;
-    };
-
-    btn.addEventListener("click", grade);
-
-    actions.appendChild(btn);
-    actions.appendChild(res);
-
-    card.appendChild(head);
-    card.appendChild(qtext);
-    card.appendChild(lr);
-    card.appendChild(picked);
-    card.appendChild(actions);
-    card.appendChild(details);
-
-    app.appendChild(card);
-
-    updatePicked();
-  });
-}
-
-function gradeAll(){
-  let ok = 0;
-  QUESTIONS.forEach(q => {
-    const card = app.querySelector(`.q[data-qid="${q.id}"]`);
-    const res = card.querySelector(".result");
-    const pickL = card.querySelector(".pickL").textContent;
-    const pickR = card.querySelector(".pickR").textContent;
-
-    const isOK = (pickL === q.ans.L) && (pickR === q.ans.R);
-    if (isOK) ok++;
-
-    res.textContent = isOK ? "正解" : "不正解";
-    res.classList.remove("ok","ng");
-    res.classList.add(isOK ? "ok" : "ng");
-  });
-
-  document.getElementById("score").textContent = ok;
-  document.getElementById("score2").textContent = ok;
-
-  if (ok === 15) blossom();
-}
-
-function blossom(){
-  burst.innerHTML = "";
-  const petals = ["🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","✨","🎉"];
-  const count = 36;
-  for(let i=0;i<count;i++){
-    const p = document.createElement("div");
-    p.className = "petal";
-    p.textContent = petals[Math.floor(Math.random()*petals.length)];
-    p.style.left = Math.random()*100 + "vw";
-    p.style.animationDuration = (3 + Math.random()*2.5) + "s";
-    p.style.fontSize = (14 + Math.random()*18) + "px";
-    p.style.transform = `translateY(-20vh) rotate(${Math.random()*180}deg)`;
-    burst.appendChild(p);
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
   }
-  setTimeout(()=> burst.innerHTML="", 5200);
+  return a;
 }
 
-render();
-document.getElementById("gradeAll").addEventListener("click", gradeAll);
-document.getElementById("gradeAll2").addEventListener("click", gradeAll);
+function start(){
+  document.body.classList.remove('results-mode');
+  idx = 0; ok = 0; ng = 0; streak = 0;
+  results = [];
+  questions = shuffle([...questions]);
+  elTotal.textContent = questions.length;
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+  next();
+}
+
+function next(){
+  if (idx >= questions.length){
+    showResults();
+    return;
+  }
+  const item = questions[idx];
+  elQ.textContent = item.q;
+  elIdx.textContent = idx+1;
+  elSub.textContent = '※ 左右＝借方/貸方。満点で🌸演出。';
+}
+
+function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
+
+let audioCtx = null;
+function beep(okFlag=true){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = okFlag ? 880 : 220;
+    g.gain.value = 0.02;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    setTimeout(()=>{ o.stop(); }, 120);
+  }catch(e){}
+}
+
+function judge(side){
+  if (idx >= questions.length) return;
+  const item = questions[idx];
+  const isOK = (side === item.correct);
+
+  results.push({
+    no: idx+1,
+    question: item.q,
+    answered: side,
+    correct: item.correct,
+    isOK: isOK
+  });
+
+  showFlash(isOK);
+  if (isOK){ ok++; streak++; vibrate(20); beep(true); }
+  else { ng++; streak=0; vibrate([30,40,30]); beep(false); }
+
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+
+  idx++;
+  setTimeout(next, 600);
+}
+
+function showFlash(isOK){
+  flash.className = isOK ? 'ok' : 'ng';
+  flash.textContent = isOK ? '⭕' : '❌';
+  flash.style.display = 'flex';
+  setTimeout(()=>{ flash.style.display='none'; }, 350);
+}
+
+function showResults(){
+  document.body.classList.add('results-mode');
+  const total = questions.length;
+  const percent = total ? Math.round(ok / total * 100) : 0;
+
+  let growthHtml = "";
+  if (total > 0 && ok === total) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌸</div>
+        <div class="small-muted">全問正解！花が咲きました。</div>
+      </div>
+    `;
+  } else if (ok <= 5) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌱</div>
+        <div class="small-muted">今日は種まきの日。少しずつ育てていきましょう。</div>
+      </div>
+    `;
+  } else {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌿</div>
+        <div class="small-muted">芽が出てきました。続ければきっと満開になります。</div>
+      </div>
+    `;
+  }
+
+  let html = "";
+  html += growthHtml;
+  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
+  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
+
+  results.forEach(r => {
+    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
+    const badgeLabel = r.isOK ? '○' : '×';
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+
+    html += `<div class="result-item">
+      <span class="badge ${badgeClass}">${badgeLabel}</span>
+      <strong>${r.no}. ${r.question}</strong><br>
+      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
+    </div>`;
+  });
+
+  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
+
+  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
+  results.forEach(r => {
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+    const status = r.isOK ? "正解" : "不正解";
+    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
+    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
+  });
+
+  html += `<div style="margin-top:10px;">
+    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
+    <textarea readonly onclick="this.select()">${textReport}</textarea>
+  </div>`;
+
+  questionBox.innerHTML = html;
+  elIdx.textContent = total;
+  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
+}
+
+/* UI操作 */
+document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
+document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
+document.getElementById('btnStart').addEventListener('click', start);
+document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
+
+/* PC授業向け：Space=左 / Enter,→=右 / ←=左 */
+window.addEventListener('keydown', (e)=>{
+  if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
+  else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
+  else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
+});
 </script>
 </body>
 </html>
