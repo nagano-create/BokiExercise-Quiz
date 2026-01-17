@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BokiExercise 左右タッチ即判定クイズ（給料・福利）</title>
+
+<style>
+:root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
+* { box-sizing: border-box; }
+html, body {
+  height:100%; margin:0; background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+}
+#app { display:flex; flex-direction:column; height:100%; max-width:720px; margin:0 auto; }
+
+header{
+  padding:12px 16px; background:var(--card);
+  display:flex; align-items:center; gap:10px;
+}
+header h1{ font-size:16px; margin:0; flex:1; }
+.pill{
+  padding:2px 10px; border:1px solid #2b2f3a;
+  border-radius:999px; font-size:11px; color:var(--muted);
+}
+.back-link{
+  font-size:12px; color:var(--muted); text-decoration:none;
+  border:1px solid #2b2f3a; padding:4px 10px; border-radius:999px;
+}
+
+#questionBox{
+  padding:18px 16px; text-align:center;
+  font-size:clamp(20px,6vw,32px); line-height:1.4;
+  overflow-y:auto; max-height:40vh;
+}
+#question{ font-weight:600; margin:6px 0 4px; }
+#sub{ font-size:12px; color:var(--muted); }
+
+#arena{ flex:1; display:flex; }
+.side{
+  flex:1; display:flex; align-items:center; justify-content:center;
+  font-size:clamp(28px,8vw,44px); font-weight:700;
+  border-top:1px solid #222; user-select:none;
+}
+.left{ border-right:1px solid #222; }
+.label{ opacity:.9; }
+
+#scoreBar{
+  padding:8px 16px; font-size:13px; color:var(--muted);
+  display:flex; justify-content:space-between;
+}
+#controls{
+  display:flex; gap:8px; padding:12px 16px; background:var(--card);
+}
+button{
+  flex:1; padding:12px; border:1px solid #2b2f3a;
+  background:#1c222b; color:var(--fg); border-radius:10px;
+}
+
+#flash{
+  position:fixed; inset:0; display:none;
+  align-items:center; justify-content:center;
+  font-size:clamp(56px,18vw,120px); font-weight:900; z-index:10;
+}
+#flash.ok{ background:rgba(29,185,84,.12); color:var(--ok); }
+#flash.ng{ background:rgba(255,77,79,.12); color:var(--ng); }
+
+.result-item{ font-size:14px; margin-bottom:8px; text-align:left; }
+.badge{ border-radius:999px; padding:0 6px; font-size:12px; }
+.badge-ok{ background:rgba(29,185,84,.15); color:var(--ok); }
+.badge-ng{ background:rgba(255,77,79,.15); color:var(--ng); }
+.small-muted{ font-size:11px; color:var(--muted); }
+
+.growth-emoji{ font-size:120px; line-height:1.1; }
+textarea{
+  width:100%; min-height:120px; background:#0f1319;
+  color:var(--fg); border:1px solid #2b2f3a;
+  border-radius:8px; padding:10px; font-size:12px;
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+<header>
+  <a href="index.html" class="back-link">Top</a>
+  <h1>BokiExercise 左右タッチ即判定クイズ</h1>
+  <div class="pill">基礎5 給料・福利</div>
+</header>
+
+<div id="questionBox">
+  <div id="question">スタートを押してください</div>
+  <div id="sub">左＝借方 / 右＝貸方</div>
+</div>
+
+<div id="arena">
+  <div class="side left" id="leftSide"><div class="label">左</div></div>
+  <div class="side right" id="rightSide"><div class="label">右</div></div>
+</div>
+
+<div id="scoreBar">
+  <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
+  <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span></div>
+</div>
+
+<div id="controls">
+  <button id="btnStart">スタート</button>
+  <button id="btnReset">リセット</button>
+</div>
+
+<div id="footerNote" class="small-muted">© BokiExercise</div>
+</div>
+
+<div id="flash"></div>
+
+<script>
+// =======================
+// 基礎5：給料・福利（3級向け・未払給料なし）15問
+// =======================
+const questionsBase = [
+  // 給料支払（費用＋現金）
+  { q:"給料を現金で支払った。『給料』は？", correct:"left",  exp:"費用は左。" },
+  { q:"給料を現金で支払った。『現金』は？", correct:"right", exp:"現金は減少。右。" },
+
+  // 所得税預り金（発生）
+  { q:"給料を支払った。『所得税預り金』は？", correct:"right", exp:"預り金は負債。右。" },
+
+  // 住民税預り金（発生）
+  { q:"給料を支払った。『住民税預り金』は？", correct:"right", exp:"預り金は右。" },
+
+  // 社会保険料預り金（発生）
+  { q:"給料を支払った。『社会保険料預り金』は？", correct:"right", exp:"預り金は右。" },
+
+  // 会社負担分：法定福利費／社会保険料
+  { q:"会社負担分の『法定福利費』を計上した。『法定福利費』は？", correct:"left", exp:"福利費は費用。左。" },
+  { q:"会社負担分の社会保険料を計上した。『社会保険料』は？", correct:"left", exp:"会社負担分は費用。左。" },
+
+  // 預り金の納付（負債減少＝左）
+  { q:"『所得税預り金』を現金で納付した。『所得税預り金』は？", correct:"left", exp:"負債の減少。左。" },
+  { q:"『所得税預り金』を現金で納付した。『現金』は？", correct:"right", exp:"現金は減少。右。" },
+
+  { q:"『住民税預り金』を現金で納付した。『住民税預り金』は？", correct:"left", exp:"負債の減少。左。" },
+  { q:"『住民税預り金』を現金で納付した。『現金』は？", correct:"right", exp:"現金は減少。右。" },
+
+  { q:"『社会保険料預り金』を現金で納付した。『社会保険料預り金』は？", correct:"left", exp:"預り金を支払う＝負債減。左。" },
+  { q:"『社会保険料預り金』を現金で納付した。『現金』は？", correct:"right", exp:"現金は減少。右。" },
+
+  // 会社負担分の社会保険料を現金で支払う（費用＋現金）
+  { q:"会社負担分の社会保険料を現金で支払った。『社会保険料』は？", correct:"left", exp:"会社負担分は費用。左。" },
+  { q:"会社負担分の社会保険料を現金で支払った。『現金』は？", correct:"right", exp:"現金は減少。右。" }
+];
+
+let questions=[], idx=0, ok=0, ng=0, results=[];
+const elQ=document.getElementById("question");
+const elIdx=document.getElementById("idx");
+const elTotal=document.getElementById("total");
+const elOk=document.getElementById("ok");
+const elNg=document.getElementById("ng");
+const flash=document.getElementById("flash");
+const box=document.getElementById("questionBox");
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function start(){
+  questions=shuffle([...questionsBase]);
+  idx=0; ok=0; ng=0; results=[];
+  elTotal.textContent=questions.length;
+  elOk.textContent=0; elNg.textContent=0;
+  next();
+}
+
+function next(){
+  if(idx>=questions.length){ showResults(); return; }
+  elQ.textContent=questions[idx].q;
+  elIdx.textContent=idx+1;
+}
+
+function judge(side){
+  const item=questions[idx];
+  const isOK=(side===item.correct);
+  results.push({q:item.q, ok:isOK, exp:item.exp, ans:side, corr:item.correct});
+
+  flash.className=isOK?"ok":"ng";
+  flash.textContent=isOK?"⭕":"❌";
+  flash.style.display="flex";
+  setTimeout(()=>flash.style.display="none",300);
+
+  if(isOK) ok++; else ng++;
+  elOk.textContent=ok; elNg.textContent=ng;
+
+  idx++;
+  setTimeout(next,500);
+}
+
+function showResults(){
+  const total=questions.length;
+  let html="";
+
+  if(total>0 && ok===total){
+    html+=`<div style="text-align:center;margin-bottom:10px;">
+      <div class="growth-emoji">🌸</div>
+      <div class="small-muted">全問正解！花が咲きました。</div>
+    </div>`;
+  }else{
+    html+=`<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}</div>`;
+  }
+
+  results.forEach((r,i)=>{
+    html+=`<div class="result-item">
+      <span class="badge ${r.ok?"badge-ok":"badge-ng"}">${r.ok?"○":"×"}</span>
+      <strong>${i+1}. ${r.q}</strong><br>
+      <span class="small-muted">解説：${r.exp}</span>
+    </div>`;
+  });
+
+  // コピー用（振り返り）
+  let text="No,問題文,あなたの答え,正解,正誤\n";
+  results.forEach((r,i)=>{
+    const a=(r.ans==="left")?"左":"右";
+    const c=(r.corr==="left")?"左":"右";
+    text+=`${i+1},"${String(r.q).replace(/"/g,'""')}",${a},${c},${r.ok?"正解":"不正解"}\n`;
+  });
+
+  html+=`<div style="margin-top:12px;">
+    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
+    <textarea readonly onclick="this.select()">${text}</textarea>
+  </div>`;
+
+  box.innerHTML=html;
+}
+
+document.getElementById("leftSide").addEventListener("click", ()=>judge("left"));
+document.getElementById("rightSide").addEventListener("click", ()=>judge("right"));
+document.getElementById("btnStart").addEventListener("click", start);
+document.getElementById("btnReset").addEventListener("click", ()=>location.reload());
+
+// PC：Space=左 / Enter,→=右 / ←=左
+window.addEventListener("keydown",(e)=>{
+  if(e.code==="Space"||e.key===" "){ judge("left"); e.preventDefault(); }
+  else if(e.code==="Enter"||e.key==="Enter"||e.code==="ArrowRight"){ judge("right"); e.preventDefault(); }
+  else if(e.code==="ArrowLeft"){ judge("left"); e.preventDefault(); }
+});
+</script>
+</body>
+</html>
