@@ -1,343 +1,338 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>日商簿記3級 仕訳 基礎1（商品取引）タッチ</title>
-  <style>
-    :root{
-      --bg:#0b1220; --card:#111a2e; --card2:#0f1930;
-      --bd:#24324f; --txt:#eaf0ff; --mut:#a9b6d6;
-      --ok:#34d399; --ng:#fb7185; --btn:#1f2a44; --btn2:#24324f;
-      --shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
-      background:linear-gradient(180deg, #070b14 0%, var(--bg) 40%, #070b14 100%);
-      color:var(--txt);
-    }
-    .wrap{max-width:980px; margin:0 auto; padding:16px;}
-    h1{font-size:18px; margin:6px 0 6px;}
-    .sub{color:var(--mut); font-size:12px; line-height:1.55; margin:0 0 12px;}
-    .topbar{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
-      border-radius:14px; padding:10px 12px; box-shadow:var(--shadow);
-      position:sticky; top:10px; z-index:5; backdrop-filter: blur(6px);
-    }
-    .topbar a{
-      color:var(--txt); text-decoration:none; border:1px solid rgba(255,255,255,.12);
-      padding:8px 10px; border-radius:12px; background:rgba(255,255,255,.04);
-      font-size:12px;
-    }
-    .btn{
-      border:1px solid rgba(255,255,255,.14);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      color:var(--txt); padding:10px 12px; border-radius:14px;
-      cursor:pointer; font-weight:700; font-size:13px;
-    }
-    .btn:hover{background:rgba(255,255,255,.08)}
-    .score{font-weight:800;}
-    .hint{color:var(--mut); font-size:12px;}
-    .q{
-      margin:14px 0; padding:12px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px; box-shadow:var(--shadow);
-    }
-    .qhead{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
-    .qid{font-weight:900; font-size:14px;}
-    .tag{font-size:11px; color:#dbe6ff; border:1px solid rgba(255,255,255,.14); padding:2px 8px; border-radius:999px; opacity:.9;}
-    .qtext{margin:10px 0 10px; line-height:1.6; color:#f3f6ff;}
-    .lr{
-      display:grid; grid-template-columns:1fr 1fr; gap:10px;
-    }
-    @media (max-width: 520px){
-      .lr{grid-template-columns:1fr;}
-    }
-    .side{
-      background:rgba(0,0,0,.18);
-      border:1px dashed rgba(255,255,255,.14);
-      border-radius:16px; padding:10px;
-    }
-    .side h3{margin:0 0 8px; font-size:13px; color:#eaf0ff;}
-    .chips{display:flex; flex-wrap:wrap; gap:8px;}
-    .chip{
-      padding:9px 10px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      cursor:pointer; user-select:none; font-size:13px; font-weight:700;
-      transition: transform .05s ease;
-    }
-    .chip:active{transform: scale(.98);}
-    .chip.selL{outline:2px solid rgba(239,68,68,.9); background:rgba(239,68,68,.12);}
-    .chip.selR{outline:2px solid rgba(59,130,246,.9); background:rgba(59,130,246,.12);}
-    .picked{
-      margin-top:10px; font-size:12px; color:var(--mut); line-height:1.5;
-    }
-    .picked b{color:#fff;}
-    .actions{
-      margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-    }
-    .result{font-weight:900;}
-    .ok{color:var(--ok);}
-    .ng{color:var(--ng);}
-    details{margin-top:10px;}
-    summary{cursor:pointer; font-weight:900; color:#eaf0ff;}
-    .exp{margin-top:8px; color:#eaf0ff; line-height:1.65; font-size:13px;}
-    .exp code{background:rgba(255,255,255,.08); padding:2px 6px; border-radius:8px;}
-    .bottombar{
-      margin:18px 0 40px;
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      justify-content:space-between;
-      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
-      border-radius:14px; padding:10px 12px; box-shadow:var(--shadow);
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BokiExercise 左右タッチ即判定クイズ（基礎1：商品取引）</title>
+<style>
+  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
+    "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
 
-    /* 花（満点演出） */
-    .burst{
-      position:fixed; inset:0; pointer-events:none; overflow:hidden;
-    }
-    .petal{
-      position:absolute; top:-10vh;
-      font-size:18px; opacity:.95;
-      animation: fall linear forwards;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,.25));
-    }
-    @keyframes fall{
-      to{ transform: translateY(120vh) rotate(540deg); opacity:0.9; }
-    }
-  </style>
+  #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
+
+  /* header（統一） */
+  header{
+    padding: 12px 16px;
+    background: var(--card);
+    display:flex; align-items:center; gap:10px;
+    position: sticky; top: 0; z-index: 20;
+  }
+  header h1 { font-size: 16px; margin: 0; flex:1; line-height: 1.2; }
+  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); white-space:nowrap; }
+
+  /* Top（左上固定/控えめ→結果で強調） */
+  .top-link{
+    font-size:12px;
+    color: var(--muted);
+    text-decoration:none;
+    border:1px solid #2b2f3a;
+    padding:4px 10px;
+    border-radius:999px;
+    display:inline-block;
+    white-space:nowrap;
+    opacity:.65;
+    background: rgba(15,19,25,.35);
+  }
+  .top-link:active{ opacity:.7; transform: scale(.98); }
+  body.results-mode .top-link{
+    opacity: 1;
+    color: var(--fg);
+    border-color: #3a4252;
+    background: rgba(28,34,43,.85);
+  }
+
+  #questionBox {
+    padding: 18px 16px;
+    text-align: center;
+    font-size: clamp(20px, 6vw, 32px);
+    line-height:1.4;
+    overflow-y:auto;
+    max-height: 40vh;
+  }
+  #question { margin: 6px 0 4px; font-weight: 600; text-align: center; }
+  #sub { font-size: 12px; color: var(--muted); }
+
+  #arena { flex:1; display:flex; }
+  .side {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(28px, 8vw, 44px); font-weight:700;
+    border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .left  { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .right { background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .label { pointer-events: none; opacity:.9; }
+
+  #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
+
+  #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
+  button {
+    flex:1; padding: 12px;
+    border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
+    border-radius:10px; font-size:14px; cursor:pointer;
+  }
+  button:active { transform: scale(.98); }
+
+  #flash {
+    position: fixed; inset: 0; display:none; align-items:center; justify-content:center;
+    font-size: clamp(56px, 18vw, 120px);
+    font-weight:900; z-index: 30;
+  }
+  #flash.ok { background: rgba(29,185,84,.12); color: var(--ok); }
+  #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
+
+  #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
+
+  .result-item { font-size:14px; margin-bottom:8px; text-align:left; }
+  .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
+  .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
+  .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
+  .small-muted { font-size:11px; color:var(--muted); }
+
+  .growth-emoji { font-size: 120px; line-height: 1.1; }
+  .growth-box { text-align:center; margin-bottom:12px; }
+
+  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>日商簿記3級 仕訳 基礎1（商品取引）タッチ（15問）</h1>
-    <p class="sub">
-      ルール：各問で <b>左（借方）</b> と <b>右（貸方）</b> を1つずつタッチ。<br>
-      借方=赤枠 / 貸方=青枠。満点で花が咲きます🌸
-    </p>
+<div id="app">
+  <header>
+    <a class="top-link" href="index.html">Top</a>
+    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
+    <div class="pill">3級仕訳基礎1.商品取引</div>
+  </header>
 
-    <div class="topbar">
-      <button class="btn" id="gradeAll">15問まとめて採点</button>
-      <span class="score">得点：<span id="score">-</span> / 15</span>
-      <span class="hint">※各問「この1問を採点」も可</span>
-      <a href="./touch_genkin.html">← 基礎0（現金のみ）へ</a>
-      <a href="./index.html">標準モードへ →</a>
-    </div>
-
-    <div id="app"></div>
-
-    <div class="bottombar">
-      <button class="btn" id="gradeAll2">15問まとめて採点</button>
-      <div class="score">得点：<span id="score2">-</span> / 15</div>
-    </div>
+  <div id="questionBox">
+    <div id="question">スタートを押してください</div>
+    <div id="sub">※ 左右＝借方/貸方。満点で🌸演出。</div>
   </div>
 
-  <div class="burst" id="burst"></div>
+  <div id="arena">
+    <div class="side left"  id="leftSide"  role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
+    <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
+  </div>
+
+  <div id="scoreBar">
+    <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
+    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
+  </div>
+
+  <div id="controls">
+    <button id="btnStart">スタート / シャッフル</button>
+    <button id="btnReset">リセット</button>
+  </div>
+
+  <div id="footerNote">© BokiExercise</div>
+</div>
+
+<div id="flash"></div>
 
 <script>
-/**
- * 基礎1（商品取引）
- * ルール：各問「左1つ」「右1つ」を選ぶ
- * ※この段階では“金額なし”で反射練習に集中
- */
-const QUESTIONS = [
-  {id:1, tag:"易", q:"現金で商品を仕入れた。", opts:["現金","仕入","売上","売掛金","買掛金","商品"], ans:{L:"仕入", R:"現金"},
-   exp:"解説：現金↓減。理由は仕入。\n答：仕入 ／ 現金"},
-  {id:2, tag:"易", q:"現金で商品を販売した。", opts:["現金","売上","仕入","売掛金","買掛金","受取手形"], ans:{L:"現金", R:"売上"},
-   exp:"解説：現金↑増。理由は売上。\n答：現金 ／ 売上"},
-  {id:3, tag:"易", q:"商品を掛けで仕入れた。", opts:["仕入","現金","買掛金","売掛金","売上","商品"], ans:{L:"仕入", R:"買掛金"},
-   exp:"解説：現金はまだ。代わりに買掛。\n答：仕入 ／ 買掛"},
-  {id:4, tag:"易", q:"商品を掛けで販売した。", opts:["売掛金","売上","現金","仕入","買掛金","前受金"], ans:{L:"売掛金", R:"売上"},
-   exp:"解説：現金はまだ。代わりに売掛。\n答：売掛 ／ 売上"},
-  {id:5, tag:"易", q:"売掛金を現金で回収した。", opts:["現金","売掛金","売上","受取手形","買掛金","仕入"], ans:{L:"現金", R:"売掛金"},
-   exp:"解説：現金↑増。理由は売掛回収。\n答：現金 ／ 売掛"},
+/* =======================
+   基礎1：商品取引（15問）
+   ※ 左=借方 / 右=貸方
+======================= */
+const set_shouhin = [
+  { q: "商品を現金で仕入れたときの『仕入』は？", correct: "left" },
+  { q: "商品を現金で仕入れたときの『現金』は？", correct: "right" },
 
-  {id:6, tag:"中", q:"買掛金を現金で支払った。", opts:["買掛金","現金","仕入","売上","売掛金","受取手形"], ans:{L:"買掛金", R:"現金"},
-   exp:"解説：現金↓減。理由は買掛の支払。\n答：買掛 ／ 現金"},
-  {id:7, tag:"中", q:"仕入れた商品を返品した（掛仕入の返品）。", opts:["仕入","買掛金","仕入返品","売上返品","現金","売掛金"], ans:{L:"買掛金", R:"仕入返品"},
-   exp:"解説：現金は動かず。買掛↓減。理由は仕入返品。\n答：買掛 ／ 仕入返品"},
-  {id:8, tag:"中", q:"販売した商品が返品された（掛売上の返品）。", opts:["売上返品","売掛金","売上","現金","買掛金","仕入返品"], ans:{L:"売上返品", R:"売掛金"},
-   exp:"解説：現金は動かず。売掛↓減。理由は売上返品。\n答：売上返品 ／ 売掛"},
-  {id:9, tag:"中", q:"売掛金の代わりに受取手形を受け取った。", opts:["受取手形","売掛金","現金","売上","仕入","買掛金"], ans:{L:"受取手形", R:"売掛金"},
-   exp:"解説：現金ではないが受手が増。売掛を差替。\n答：受手 ／ 売掛"},
-  {id:10, tag:"中", q:"買掛金の代わりに支払手形を振り出した。", opts:["支払手形","買掛金","現金","仕入","売掛金","売上"], ans:{L:"買掛金", R:"支払手形"},
-   exp:"解説：現金はまだ。買掛を手形に差替。\n答：買掛 ／ 支手"},
+  { q: "掛けで商品を仕入れたときの『買掛金』は？", correct: "right" },
+  { q: "掛けで商品を仕入れたときの『仕入』は？", correct: "left" },
 
-  {id:11, tag:"難", q:"掛けで仕入れた商品の一部を返品した後、残りを現金で支払った。", opts:["仕入返品","買掛金","現金","仕入","売掛金","売上"], ans:{L:"買掛金", R:"現金"},
-   exp:"解説：返品後でも、支払は現金↓減。理由は買掛支払。\n答：買掛 ／ 現金"},
-  {id:12, tag:"難", q:"掛売上の代金の一部を現金で回収した。", opts:["現金","売掛金","売上","仕入","買掛金","受取手形"], ans:{L:"現金", R:"売掛金"},
-   exp:"解説：現金↑増。理由は売掛回収。\n答：現金 ／ 売掛"},
-  {id:13, tag:"難", q:"掛仕入の代金の一部を現金で支払った。", opts:["買掛金","現金","仕入","売上","売掛金","支払手形"], ans:{L:"買掛金", R:"現金"},
-   exp:"解説：現金↓減。理由は買掛支払。\n答：買掛 ／ 現金"},
-  {id:14, tag:"難", q:"掛売上の代金として受取手形を受け取った。", opts:["受取手形","売掛金","売上","現金","仕入","買掛金"], ans:{L:"受取手形", R:"売掛金"},
-   exp:"解説：現金ではないが受手↑増。売掛と差替。\n答：受手 ／ 売掛"},
-  {id:15, tag:"難", q:"掛仕入の代金として支払手形を振り出した。", opts:["買掛金","支払手形","現金","仕入","売上","売掛金"], ans:{L:"買掛金", R:"支払手形"},
-   exp:"解説：現金はまだ。買掛を手形に差替。\n答：買掛 ／ 支手"},
+  { q: "掛けで商品を販売したときの『売上』は？", correct: "right" },
+  { q: "掛けで商品を販売したときの『売掛金』は？", correct: "left" },
+
+  { q: "受取手形で売掛金を回収したときの『受取手形』は？", correct: "left" },
+  { q: "受取手形で売掛金を回収したときの『売掛金』は？", correct: "right" },
+
+  { q: "小切手で商品を販売したときの『現金』は？", correct: "left" },
+  { q: "小切手で商品を販売したときの『売上』は？", correct: "right" },
+
+  { q: "買掛金を支払手形で支払ったときの『支払手形』は？", correct: "right" },
+  { q: "買掛金を支払手形で支払ったときの『買掛金』は？", correct: "left" },
+
+  { q: "売掛金を現金で回収したときの『現金』は？", correct: "left" },
+  { q: "売掛金を現金で回収したときの『売掛金』は？", correct: "right" },
+
+  { q: "受け取っていた小切手を当座預金口座に預け入れたときの『当座預金』は？", correct: "left" }
 ];
 
-const app = document.getElementById("app");
-const burst = document.getElementById("burst");
+let questions = JSON.parse(JSON.stringify(set_shouhin));
+let idx = 0, ok = 0, ng = 0, streak = 0;
+let results = [];
 
-function makeChip(text, side, onPick){
-  const el = document.createElement("div");
-  el.className = "chip";
-  el.textContent = text;
-  el.addEventListener("click", () => onPick(text, el, side));
-  return el;
-}
+const elQ = document.getElementById('question');
+const elSub = document.getElementById('sub');
+const elIdx = document.getElementById('idx');
+const elTotal = document.getElementById('total');
+const elOk = document.getElementById('ok');
+const elNg = document.getElementById('ng');
+const elStreak = document.getElementById('streak');
+const flash = document.getElementById('flash');
+const questionBox = document.getElementById('questionBox');
 
-function render(){
-  app.innerHTML = "";
-  QUESTIONS.forEach(q => {
-    const card = document.createElement("div");
-    card.className = "q";
-    card.dataset.qid = q.id;
+elTotal.textContent = questions.length;
 
-    const head = document.createElement("div");
-    head.className = "qhead";
-    head.innerHTML = `<div class="qid">【${q.id}】<span class="tag">${q.tag}</span></div>`;
-
-    const qtext = document.createElement("div");
-    qtext.className = "qtext";
-    qtext.textContent = q.q;
-
-    const lr = document.createElement("div");
-    lr.className = "lr";
-
-    const left = document.createElement("div");
-    left.className = "side";
-    left.innerHTML = `<h3>左（借方）</h3>`;
-    const understood = document.createElement("div");
-    understood.className = "picked";
-    understood.innerHTML = `選択：<b class="pickL">（未選択）</b> ／ <b class="pickR">（未選択）</b>`;
-
-    const chipsL = document.createElement("div");
-    chipsL.className = "chips";
-    const chipsR = document.createElement("div");
-    chipsR.className = "chips";
-
-    let pickedL = null, pickedR = null;
-    let pickedLEl = null, pickedREl = null;
-
-    const updatePicked = () => {
-      card.querySelector(".pickL").textContent = pickedL || "（未選択）";
-      card.querySelector(".pickR").textContent = pickedR || "（未選択）";
-    };
-
-    const onPick = (text, el, side) => {
-      if (side === "L"){
-        if (pickedLEl) pickedLEl.classList.remove("selL");
-        pickedL = text; pickedLEl = el;
-        el.classList.add("selL");
-      } else {
-        if (pickedREl) pickedREl.classList.remove("selR");
-        pickedR = text; pickedREl = el;
-        el.classList.add("selR");
-      }
-      updatePicked();
-    };
-
-    q.opts.forEach(opt => chipsL.appendChild(makeChip(opt,"L",onPick)));
-    q.opts.forEach(opt => chipsR.appendChild(makeChip(opt,"R",onPick)));
-
-    const right = document.createElement("div");
-    right.className = "side";
-    right.innerHTML = `<h3>右（貸方）</h3>`;
-
-    left.appendChild(chipsL);
-    right.appendChild(chipsR);
-
-    lr.appendChild(left);
-    lr.appendChild(right);
-
-    const actions = document.createElement("div");
-    actions.className = "actions";
-    const btn = document.createElement("button");
-    btn.className = "btn";
-    btn.textContent = "この1問を採点";
-    const res = document.createElement("span");
-    res.className = "result";
-
-    const details = document.createElement("details");
-    const summary = document.createElement("summary");
-    summary.textContent = "解答・解説を見る";
-    const exp = document.createElement("div");
-    exp.className = "exp";
-    const expLines = q.exp.split("\n");
-    exp.innerHTML = `解説：${expLines[0].replace("解説：","")}<br>答：<code>${expLines[1].replace("答：","")}</code>`;
-    details.appendChild(summary);
-    details.appendChild(exp);
-
-    const grade = () => {
-      const ok = (pickedL === q.ans.L) && (pickedR === q.ans.R);
-      res.textContent = ok ? "正解" : "不正解";
-      res.classList.remove("ok","ng");
-      res.classList.add(ok ? "ok" : "ng");
-      details.open = true;
-      return ok;
-    };
-
-    btn.addEventListener("click", grade);
-
-    actions.appendChild(btn);
-    actions.appendChild(res);
-
-    card.appendChild(head);
-    card.appendChild(qtext);
-    card.appendChild(lr);
-    card.appendChild(understood);
-    card.appendChild(actions);
-    card.appendChild(details);
-
-    app.appendChild(card);
-
-    updatePicked();
-  });
-}
-
-function gradeAll(){
-  let ok = 0;
-  QUESTIONS.forEach(q => {
-    const card = app.querySelector(`.q[data-qid="${q.id}"]`);
-    const res = card.querySelector(".result");
-    const pickL = card.querySelector(".pickL").textContent;
-    const pickR = card.querySelector(".pickR").textContent;
-
-    const isOK = (pickL === q.ans.L) && (pickR === q.ans.R);
-    if (isOK) ok++;
-
-    res.textContent = isOK ? "正解" : "不正解";
-    res.classList.remove("ok","ng");
-    res.classList.add(isOK ? "ok" : "ng");
-  });
-
-  document.getElementById("score").textContent = ok;
-  document.getElementById("score2").textContent = ok;
-
-  if (ok === 15) blossom();
-}
-
-function blossom(){
-  burst.innerHTML = "";
-  const petals = ["🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","🌸","✨","🎉"];
-  const count = 36;
-  for(let i=0;i<count;i++){
-    const p = document.createElement("div");
-    p.className = "petal";
-    p.textContent = petals[Math.floor(Math.random()*petals.length)];
-    p.style.left = Math.random()*100 + "vw";
-    p.style.animationDuration = (3 + Math.random()*2.5) + "s";
-    p.style.fontSize = (14 + Math.random()*18) + "px";
-    p.style.transform = `translateY(-20vh) rotate(${Math.random()*180}deg)`;
-    burst.appendChild(p);
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
   }
-  setTimeout(()=> burst.innerHTML="", 5200);
+  return a;
 }
 
-render();
-document.getElementById("gradeAll").addEventListener("click", gradeAll);
-document.getElementById("gradeAll2").addEventListener("click", gradeAll);
+function start(){
+  document.body.classList.remove('results-mode');
+  idx = 0; ok = 0; ng = 0; streak = 0;
+  results = [];
+  questions = shuffle([...questions]);
+  elTotal.textContent = questions.length;
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+  next();
+}
+
+function next(){
+  if (idx >= questions.length){
+    showResults();
+    return;
+  }
+  const item = questions[idx];
+  elQ.textContent = item.q;
+  elIdx.textContent = idx+1;
+  elSub.textContent = '※ 左右＝借方/貸方。満点で🌸演出。';
+}
+
+function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
+
+let audioCtx = null;
+function beep(okFlag=true){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = okFlag ? 880 : 220;
+    g.gain.value = 0.02;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    setTimeout(()=>{ o.stop(); }, 120);
+  }catch(e){}
+}
+
+function judge(side){
+  if (idx >= questions.length) return;
+  const item = questions[idx];
+  const isOK = (side === item.correct);
+
+  results.push({
+    no: idx+1,
+    question: item.q,
+    answered: side,
+    correct: item.correct,
+    isOK: isOK
+  });
+
+  showFlash(isOK);
+  if (isOK){ ok++; streak++; vibrate(20); beep(true); }
+  else { ng++; streak=0; vibrate([30,40,30]); beep(false); }
+
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+
+  idx++;
+  setTimeout(next, 600);
+}
+
+function showFlash(isOK){
+  flash.className = isOK ? 'ok' : 'ng';
+  flash.textContent = isOK ? '⭕' : '❌';
+  flash.style.display = 'flex';
+  setTimeout(()=>{ flash.style.display='none'; }, 350);
+}
+
+function showResults(){
+  document.body.classList.add('results-mode');
+  const total = questions.length;
+  const percent = total ? Math.round(ok / total * 100) : 0;
+
+  let growthHtml = "";
+  if (total > 0 && ok === total) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌸</div>
+        <div class="small-muted">全問正解！花が咲きました。</div>
+      </div>
+    `;
+  } else if (ok <= 5) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌱</div>
+        <div class="small-muted">今日は種まきの日。少しずつ育てていきましょう。</div>
+      </div>
+    `;
+  } else {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌿</div>
+        <div class="small-muted">芽が出てきました。続ければきっと満開になります。</div>
+      </div>
+    `;
+  }
+
+  let html = "";
+  html += growthHtml;
+  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
+  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
+
+  results.forEach(r => {
+    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
+    const badgeLabel = r.isOK ? '○' : '×';
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+
+    html += `<div class="result-item">
+      <span class="badge ${badgeClass}">${badgeLabel}</span>
+      <strong>${r.no}. ${r.question}</strong><br>
+      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
+    </div>`;
+  });
+
+  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
+
+  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
+  results.forEach(r => {
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+    const status = r.isOK ? "正解" : "不正解";
+    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
+    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
+  });
+
+  html += `<div style="margin-top:10px;">
+    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
+    <textarea readonly onclick="this.select()">${textReport}</textarea>
+  </div>`;
+
+  questionBox.innerHTML = html;
+  elIdx.textContent = total;
+  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
+}
+
+/* UI操作 */
+document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
+document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
+document.getElementById('btnStart').addEventListener('click', start);
+document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
+
+/* PC授業向け：Space=左 / Enter,→=右 / ←=左 */
+window.addEventListener('keydown', (e)=>{
+  if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
+  else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
+  else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
+});
 </script>
 </body>
 </html>
