@@ -4,44 +4,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>BokiExercise 左右タッチ即判定クイズ（基礎4：税金・配当）</title>
+<title>BokiExercise 左右タッチ即判定クイズ（税金・配当）</title>
 <style>
   :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
     "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
-
   #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
 
-  header{
-    padding: 12px 16px;
-    background: var(--card);
-    display:flex; align-items:center; gap:10px;
-    position: sticky; top: 0; z-index: 20;
-  }
-  header h1 { font-size: 16px; margin: 0; flex:1; line-height: 1.2; }
-  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); white-space:nowrap; }
+  header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
+  header h1 { font-size: 16px; margin: 0; flex:1; }
+  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
 
-  .top-link{
+  /* ▼ Topボタン（左上固定：スクロールしても見える） */
+  .topbar{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .back-link{
     font-size:12px;
-    color: var(--muted);
+    color: var(--fg);
     text-decoration:none;
     border:1px solid #2b2f3a;
     padding:4px 10px;
     border-radius:999px;
     display:inline-block;
-    white-space:nowrap;
-    opacity:.65;
-    background: rgba(15,19,25,.35);
+    background: rgba(15,17,21,.35);
   }
-  .top-link:active{ opacity:.7; transform: scale(.98); }
-  body.results-mode .top-link{
-    opacity: 1;
-    color: var(--fg);
-    border-color: #3a4252;
-    background: rgba(28,34,43,.85);
-  }
+  .back-link:active{ opacity:.7; }
 
   #questionBox {
     padding: 18px 16px;
@@ -68,8 +62,7 @@
 
   #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
   button {
-    flex:1; padding: 12px;
-    border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
+    flex:1; padding: 12px; border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
     border-radius:10px; font-size:14px; cursor:pointer;
   }
   button:active { transform: scale(.98); }
@@ -84,7 +77,7 @@
 
   #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
 
-  .result-item { font-size:14px; margin-bottom:8px; text-align:left; }
+  .result-item { font-size:14px; margin-bottom:10px; text-align:left; }
   .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
   .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
   .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
@@ -93,20 +86,30 @@
   .growth-emoji { font-size: 120px; line-height: 1.1; }
   .growth-box { text-align:center; margin-bottom:12px; }
 
+  .expbox{
+    margin-top:8px;
+    padding:10px 12px;
+    border:1px solid #2b2f3a;
+    border-radius:10px;
+    background:#12151c;
+  }
+  .expbox .ttl{ font-size:12px; color:var(--muted); margin-bottom:6px; }
+  .expbox .txt{ font-size:13px; color:var(--fg); line-height:1.55; white-space:pre-wrap; }
+
   textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <a class="top-link" href="index.html">Top</a>
+  <header class="topbar">
+    <a class="back-link" href="index.html">Top</a>
     <h1>BokiExercise 左右タッチ即判定クイズ</h1>
     <div class="pill">3級仕訳基礎4.税金・配当</div>
   </header>
 
   <div id="questionBox">
     <div id="question">スタートを押してください</div>
-    <div id="sub">※ 左右＝借方/貸方。満点で🌸演出。</div>
+    <div id="sub">左=借方 / 右=貸方（左右をタップで即判定）</div>
   </div>
 
   <div id="arena">
@@ -130,35 +133,90 @@
 <div id="flash"></div>
 
 <script>
-/* =======================
-   基礎4：税金・配当（15問）
-   ※ 左=借方 / 右=貸方
-======================= */
+// =======================
+// ▼ 基礎4．税金・配当（15問）▼
+// =======================
 const set_zeikin = [
-  // 消費税（仮払＝資産→左 / 仮受＝負債→右）
-  { q: "課税仕入の消費税を計上したときの『仮払消費税』は？", correct: "left" },
-  { q: "課税売上の消費税を計上したときの『仮受消費税』は？", correct: "right" },
-  { q: "決算で『仮受消費税－仮払消費税』がプラス（納付）となったときの『未払消費税』は？", correct: "right" },
-  { q: "決算で消費税を未払計上するとき、相殺する『仮払消費税』は？", correct: "right" }, // 仮払を消す＝貸方
-  { q: "決算で消費税を未払計上するとき、相殺する『仮受消費税』は？", correct: "left" },  // 仮受を消す＝借方
-
-  // 租税公課（費用＝左）
-  { q: "印紙税などを計上したときの『租税公課』は？", correct: "left" },
-  { q: "固定資産税などを計上したときの『租税公課』は？", correct: "left" },
-  { q: "消費税（納付分）の処理で費用計上する方式を採るときの『租税公課』は？", correct: "left" },
-
-  // 法人税等（費用＝左 / 未払法人税等＝負債→右 / 仮払法人税＝資産→左）
-  { q: "決算で当期の税金を費用計上する『法人税等』は？", correct: "left" },
-  { q: "決算で法人税等を未払計上するときの『未払法人税等』は？", correct: "right" },
-  { q: "中間申告などで前もって納付したときの『仮払法人税』は？", correct: "left" },
-  { q: "決算で『仮払法人税』を『未払法人税等』に充当（差し引き）するときの『仮払法人税』は？", correct: "right" }, // 仮払を消す＝貸方
-  { q: "決算で『仮払法人税』を差し引いて残額を負債にする『未払法人税等』は？", correct: "right" },
-
-  // 配当（未払配当金＝負債→右）
-  { q: "株主への配当金を未払計上するときの『未払配当金』は？", correct: "right" },
-  { q: "配当金の支払いを『未払配当金』から取り崩すときの『未払配当金』は？", correct: "left" } // 未払配当金を消す＝借方
+  {
+    q: "期中で法人税等を計算し仮払いした。『仮払法人税等』は？",
+    correct: "left",
+    exp: "解説：仮払法人税等は、あとで精算するための資産。資産の増加は左。"
+  },
+  {
+    q: "期末で『法人税等』が確定した。『仮払法人税等』は？",
+    correct: "right",
+    exp: "解説：仮払分は精算されるため減少。資産の減少は右。"
+  },
+  {
+    q: "期末で『法人税等』が確定した。『未払法人税等』は？",
+    correct: "right",
+    exp: "解説：まだ支払っていない税金は負債。負債の増加は右。"
+  },
+  {
+    q: "『未払法人税等』を現金で支払った。『未払法人税等』は？",
+    correct: "left",
+    exp: "解説：支払ったことで負債が減少。負債の減少は左。"
+  },
+  {
+    q: "『未払法人税等』を現金で支払った。『現金』は？",
+    correct: "right",
+    exp: "解説：現金が減る。資産の減少は右。"
+  },
+  {
+    q: "税抜方式である。現金で仕入をした。『仮払消費税』は？",
+    correct: "left",
+    exp: "解説：支払った消費税はあとで精算する資産。資産の増加は左。"
+  },
+  {
+    q: "税抜方式である。売掛金で販売をした。『仮受消費税』は？",
+    correct: "right",
+    exp: "解説：預かっている消費税は負債。負債の増加は右。"
+  },
+  {
+    q: "期末に『仮払消費税』と『仮受消費税』を相殺した。『仮払消費税』は？",
+    correct: "right",
+    exp: "解説：相殺により仮払分は減少。資産の減少は右。"
+  },
+  {
+    q: "期末に『仮払消費税』と『仮受消費税』を相殺した。『仮受消費税』は？",
+    correct: "left",
+    exp: "解説：相殺により仮受分は減少。負債の減少は左。"
+  },
+  {
+    q: "『仮払消費税』と『仮受消費税』を相殺した。『未払消費税』は？",
+    correct: "right",
+    exp: "解説：差額を未払消費税として計上。負債の増加は右。"
+  },
+  {
+    q: "現金で収入印紙を購入した。『租税公課』は？",
+    correct: "left",
+    exp: "解説：租税公課は費用。費用の発生は左。"
+  },
+  {
+    q: "期末に収入印紙の在庫があり処理した。『貯蔵品』は？",
+    correct: "left",
+    exp: "解説：未使用分は資産として残す。資産の増加は左。"
+  },
+  {
+    q: "固定資産税を現金で支払った。『固定資産税（租税公課）』は？",
+    correct: "left",
+    exp: "解説：固定資産税は費用。費用の発生は左。"
+  },
+  {
+    q: "『配当金』が確定した。『配当金』は？",
+    correct: "left",
+    exp: "解説：配当金は利益処分（純資産の減少）。純資産の減少は左。"
+  },
+  {
+    q: "『配当金』が確定した。『未払配当金』は？",
+    correct: "right",
+    exp: "解説：まだ支払っていない配当金は負債。負債の増加は右。"
+  }
 ];
 
+// =======================
+// ▼ 共通ロジック（標準と同じ） ▼
+// =======================
 let questions = JSON.parse(JSON.stringify(set_zeikin));
 let idx = 0, ok = 0, ng = 0, streak = 0;
 let results = [];
@@ -184,7 +242,6 @@ function shuffle(a){
 }
 
 function start(){
-  document.body.classList.remove('results-mode');
   idx = 0; ok = 0; ng = 0; streak = 0;
   results = [];
   questions = shuffle([...questions]);
@@ -201,11 +258,12 @@ function next(){
   const item = questions[idx];
   elQ.textContent = item.q;
   elIdx.textContent = idx+1;
-  elSub.textContent = '※ 左右＝借方/貸方。満点で🌸演出。';
+  elSub.textContent = '左=借方 / 右=貸方（左右をタップで即判定）';
 }
 
 function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
 
+// 簡易ビープ（初回ユーザー操作後のみ作動）
 let audioCtx = null;
 function beep(okFlag=true){
   try{
@@ -218,7 +276,7 @@ function beep(okFlag=true){
     o.connect(g); g.connect(audioCtx.destination);
     o.start();
     setTimeout(()=>{ o.stop(); }, 120);
-  }catch(e){}
+  }catch(e){ /* ignore */ }
 }
 
 function judge(side){
@@ -231,7 +289,8 @@ function judge(side){
     question: item.q,
     answered: side,
     correct: item.correct,
-    isOK: isOK
+    isOK: isOK,
+    exp: item.exp || ""
   });
 
   showFlash(isOK);
@@ -252,7 +311,6 @@ function showFlash(isOK){
 }
 
 function showResults(){
-  document.body.classList.add('results-mode');
   const total = questions.length;
   const percent = total ? Math.round(ok / total * 100) : 0;
 
@@ -295,18 +353,23 @@ function showResults(){
       <span class="badge ${badgeClass}">${badgeLabel}</span>
       <strong>${r.no}. ${r.question}</strong><br>
       <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
+      <div class="expbox">
+        <div class="ttl">解説</div>
+        <div class="txt">${escapeHtml(r.exp)}</div>
+      </div>
     </div>`;
   });
 
   html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
 
-  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
+  let textReport = "No,問題文,あなたの答え,正解,正誤,解説\n";
   results.forEach(r => {
     const answeredJp = r.answered === 'left' ? '左' : '右';
     const correctJp  = r.correct  === 'left' ? '左' : '右';
     const status = r.isOK ? "正解" : "不正解";
     const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
-    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
+    const safeExp = '"' + String(r.exp || "").replace(/"/g,'""') + '"';
+    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status},${safeExp}\n`;
   });
 
   html += `<div style="margin-top:10px;">
@@ -316,16 +379,25 @@ function showResults(){
 
   questionBox.innerHTML = html;
   elIdx.textContent = total;
-  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
+  elSub.textContent = 'お疲れさまでした。結果一覧で解説も確認できます。';
 }
 
-/* UI操作 */
+function escapeHtml(s){
+  return String(s ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+// UI操作
 document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
 document.getElementById('btnStart').addEventListener('click', start);
 document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
 
-/* PC授業向け：Space=左 / Enter,→=右 / ←=左 */
+// PC授業向け：Space=左 / Enter,→=右 / ←=左
 window.addEventListener('keydown', (e)=>{
   if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
   else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
