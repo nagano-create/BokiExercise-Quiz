@@ -4,43 +4,47 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>BokiExercise 左右タッチ即判定クイズ（現金）</title>
+<title>BokiExercise 左右タッチ即判定クイズ（基礎0：現金のみ）</title>
 <style>
   :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
     "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
+
   #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
 
-  header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; }
-  header h1 { font-size: 16px; margin: 0; flex:1; }
-  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
-
-  /* ▼ Topボタン：常に左上固定（問題中は半透明／結果で強調） */
-  .top-link{
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 50;
-    font-size: 12px;
-    color: var(--fg);
-    text-decoration: none;
-    border: 1px solid #2b2f3a;
-    background: rgba(15,17,21,.45);
-    padding: 6px 12px;
-    border-radius: 999px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    opacity: .55;            /* 問題中は半透明 */
-    transition: opacity .2s ease, transform .2s ease, background .2s ease;
-    user-select:none;
+  /* header（standardと揃える） */
+  header{
+    padding: 12px 16px;
+    background: var(--card);
+    display:flex; align-items:center; gap:10px;
+    position: sticky; top: 0; z-index: 20;
   }
-  .top-link:active{ transform: scale(.98); }
-  .top-link:hover{ opacity: .9; }
-  .top-link.strong{
-    opacity: 1;              /* 結果画面では強調 */
-    background: rgba(23,26,33,.92);
+  header h1 { font-size: 16px; margin: 0; flex:1; line-height: 1.2; }
+  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); white-space:nowrap; }
+
+  /* Top（常に左上固定 / 見やすく） */
+  .top-link{
+    font-size:12px;
+    color: var(--muted);
+    text-decoration:none;
+    border:1px solid #2b2f3a;
+    padding:4px 10px;
+    border-radius:999px;
+    display:inline-block;
+    white-space:nowrap;
+    opacity:.65;                 /* 問題中は控えめ */
+    background: rgba(15,19,25,.35);
+  }
+  .top-link:active{ opacity:.7; transform: scale(.98); }
+
+  /* 結果画面ではTopを強調 */
+  body.results-mode .top-link{
+    opacity: 1;
+    color: var(--fg);
+    border-color: #3a4252;
+    background: rgba(28,34,43,.85);
   }
 
   #questionBox {
@@ -68,7 +72,8 @@
 
   #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
   button {
-    flex:1; padding: 12px; border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
+    flex:1; padding: 12px;
+    border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
     border-radius:10px; font-size:14px; cursor:pointer;
   }
   button:active { transform: scale(.98); }
@@ -76,7 +81,7 @@
   #flash {
     position: fixed; inset: 0; display:none; align-items:center; justify-content:center;
     font-size: clamp(56px, 18vw, 120px);
-    font-weight:900; z-index: 40;
+    font-weight:900; z-index: 30;
   }
   #flash.ok { background: rgba(29,185,84,.12); color: var(--ok); }
   #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
@@ -91,23 +96,21 @@
 
   .growth-emoji { font-size: 120px; line-height: 1.1; }
   .growth-box { text-align:center; margin-bottom:12px; }
+
   textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
 </style>
 </head>
 <body>
-
-<!-- Top（常時左上固定） -->
-<a class="top-link" id="topLink" href="index.html">Top</a>
-
 <div id="app">
   <header>
+    <a class="top-link" href="index.html">Top</a>
     <h1>BokiExercise 左右タッチ即判定クイズ</h1>
     <div class="pill">3級仕訳基礎0.現金のみ</div>
   </header>
 
   <div id="questionBox">
     <div id="question">スタートを押してください</div>
-    <div id="sub">会計ボキササイズ：左=借方（Debit）/ 右=貸方（Credit）</div>
+    <div id="sub">※ 左右＝借方/貸方。満点で🌸演出。</div>
   </div>
 
   <div id="arena">
@@ -132,9 +135,9 @@
 
 <script>
 /* =======================
- * ▼ 3級仕訳 基礎0.現金のみ（15問）
- * ルール：左=借方 / 右=貸方
- * ======================= */
+   基礎0：現金のみ（15問）
+   ※ ここは「問題内容は変えない」方針で固定
+======================= */
 const set_genkin = [
   { q: "商品を現金で販売した。『現金』は？", correct: "left" },
   { q: "商品を現金で販売した。『売上』は？", correct: "right" },
@@ -147,7 +150,7 @@ const set_genkin = [
   { q: "建物を現金で購入した。『建物』は？", correct: "left" },
   { q: "備品を現金で購入した。『備品』は？", correct: "left" },
   { q: "未払金を現金で支払った。『現金』は？", correct: "right" },
-  { q: "家賃を前もって現金で受け取ったときの『前受収益』は？", correct: "right" },
+  { q: "家賃を前もって現金で受け取った。『前受収益』は？", correct: "right" },
   { q: "未払費用を現金で払った。『未払費用』は？", correct: "left" },
   { q: "顧客から手付金として現金を受け取った。『前受金』は？", correct: "right" },
   { q: "お金を数えたら足りなかった！『現金過不足』は？", correct: "left" }
@@ -166,7 +169,6 @@ const elNg = document.getElementById('ng');
 const elStreak = document.getElementById('streak');
 const flash = document.getElementById('flash');
 const questionBox = document.getElementById('questionBox');
-const topLink = document.getElementById('topLink');
 
 elTotal.textContent = questions.length;
 
@@ -179,24 +181,12 @@ function shuffle(a){
 }
 
 function start(){
-  // 問題プレイ中はTopを半透明に戻す
-  topLink.classList.remove('strong');
-
+  document.body.classList.remove('results-mode');  // ← 結果強調を戻す
   idx = 0; ok = 0; ng = 0; streak = 0;
   results = [];
   questions = shuffle([...questions]);
   elTotal.textContent = questions.length;
   elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
-
-  // questionBoxが結果表示に変わっている場合を戻す
-  questionBox.innerHTML = `
-    <div id="question"></div>
-    <div id="sub"></div>
-  `;
-  // 参照を張り直し
-  window._qEl = document.getElementById('question');
-  window._subEl = document.getElementById('sub');
-
   next();
 }
 
@@ -206,14 +196,13 @@ function next(){
     return;
   }
   const item = questions[idx];
-  (window._qEl || elQ).textContent = item.q;
-  (window._subEl || elSub).textContent = '左=借方 / 右=貸方';
+  elQ.textContent = item.q;
   elIdx.textContent = idx+1;
+  elSub.textContent = '※ 左右＝借方/貸方。満点で🌸演出。';
 }
 
 function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
 
-// 簡易ビープ（初回ユーザー操作後のみ作動）
 let audioCtx = null;
 function beep(okFlag=true){
   try{
@@ -226,7 +215,7 @@ function beep(okFlag=true){
     o.connect(g); g.connect(audioCtx.destination);
     o.start();
     setTimeout(()=>{ o.stop(); }, 120);
-  }catch(e){ /* ignore */ }
+  }catch(e){}
 }
 
 function judge(side){
@@ -260,9 +249,7 @@ function showFlash(isOK){
 }
 
 function showResults(){
-  // 結果ではTopを強調
-  topLink.classList.add('strong');
-
+  document.body.classList.add('results-mode');     // ← 結果画面でTopを強調
   const total = questions.length;
   const percent = total ? Math.round(ok / total * 100) : 0;
 
@@ -326,15 +313,16 @@ function showResults(){
 
   questionBox.innerHTML = html;
   elIdx.textContent = total;
+  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
 }
 
-// UI操作（※二重登録しない）
+/* UI操作 */
 document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
 document.getElementById('btnStart').addEventListener('click', start);
 document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
 
-// PC授業向け：Space=左 / Enter,→=右 / ←=左
+/* PC授業向け：Space=左 / Enter,→=右 / ←=左 */
 window.addEventListener('keydown', (e)=>{
   if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
   else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
