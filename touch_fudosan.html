@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BokiExercise 左右タッチ即判定クイズ（不動産）</title>
+<style>
+  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
+    "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuYuGothic", "YuGothic", "Meiryo", sans-serif; }
+  #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
+
+  header { padding: 12px 16px; background: var(--card); display:flex; align-items:center; gap:10px; position: sticky; top:0; z-index: 5; }
+  header h1 { font-size: 16px; margin: 0; flex:1; }
+  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); }
+
+  /* Topリンク（常に左上／問題中は半透明・結果で強調） */
+  .top-link{
+    font-size:12px;
+    color: #cfd6e4;
+    text-decoration:none;
+    border:1px solid #2b2f3a;
+    padding:6px 10px;
+    border-radius:999px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background: rgba(15,19,25,.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: .78;
+  }
+  .top-link:hover{ opacity: .95; }
+  .top-link:active{ transform: scale(.98); }
+  .top-link.strong{
+    opacity: 1;
+    border-color: rgba(255,255,255,.25);
+    box-shadow: 0 0 0 3px rgba(29,185,84,.15);
+  }
+
+  #questionBox {
+    padding: 18px 16px;
+    text-align: center;
+    font-size: clamp(20px, 6vw, 32px);
+    line-height:1.4;
+    overflow-y:auto;
+    max-height: 40vh;
+  }
+  #question { margin: 6px 0 4px; font-weight: 600; text-align: center; }
+  #sub { font-size: 12px; color: var(--muted); }
+
+  #arena { flex:1; display:flex; }
+  .side {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(28px, 8vw, 44px); font-weight:700;
+    border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .left  { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .right { background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
+  .label { pointer-events: none; opacity:.9; }
+
+  #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
+
+  #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
+  button {
+    flex:1; padding: 12px; border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
+    border-radius:10px; font-size:14px; cursor:pointer;
+  }
+  button:active { transform: scale(.98); }
+
+  #flash {
+    position: fixed; inset: 0; display:none; align-items:center; justify-content:center;
+    font-size: clamp(56px, 18vw, 120px);
+    font-weight:900; z-index: 10;
+  }
+  #flash.ok { background: rgba(29,185,84,.12); color: var(--ok); }
+  #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
+
+  #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
+
+  .result-item { font-size:14px; margin-bottom:8px; text-align:left; }
+  .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
+  .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
+  .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
+  .small-muted { font-size:11px; color:var(--muted); }
+
+  .growth-emoji { font-size: 120px; line-height: 1.1; }
+  .growth-box { text-align:center; margin-bottom:12px; }
+  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a class="top-link" id="topLink" href="index.html">⬅ Top</a>
+    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
+    <div class="pill">基礎9. 不動産</div>
+  </header>
+
+  <div id="questionBox">
+    <div id="question">スタート / シャッフル を押してください</div>
+    <div id="sub">左=借方 / 右=貸方（※満点で🌸）</div>
+  </div>
+
+  <div id="arena">
+    <div class="side left"  id="leftSide"  role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
+    <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
+  </div>
+
+  <div id="scoreBar">
+    <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
+    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
+  </div>
+
+  <div id="controls">
+    <button id="btnStart">スタート / シャッフル</button>
+    <button id="btnReset">リセット</button>
+  </div>
+
+  <div id="footerNote">© BokiExercise</div>
+</div>
+
+<div id="flash"></div>
+
+<script>
+// =======================
+// ▼ 基礎9：不動産（15問）▼
+// ミックス：賃貸（受取家賃/受取地代）＋保有（修繕費/固定資産税/減価償却）＋売却（売却損益）
+// =======================
+const set_fudosan = [
+  // 賃貸収益
+  { q: "建物を貸し付け、家賃を現金で受け取った。『受取家賃』は？", correct: "right" },
+  { q: "土地を貸し付け、地代を現金で受け取った。『受取地代』は？", correct: "right" },
+
+  // 保有コスト（費用）
+  { q: "建物を修理し、修繕代を現金で支払った。『修繕費』は？", correct: "left" },
+  { q: "建物を修理し、修繕代を現金で支払った。『現金』は？", correct: "right" },
+
+  // 固定資産税（租税公課）
+  { q: "建物の固定資産税を現金で支払った。『固定資産税（租税公課）』は？", correct: "left" },
+  { q: "建物の固定資産税を現金で支払った。『現金』は？", correct: "right" },
+
+  // 敷金・保証金（資産）
+  { q: "事務所を借りるため、差入保証金を現金で支払った。『差入保証金』は？", correct: "left" },
+  { q: "事務所を借りるため、差入保証金を現金で支払った。『現金』は？", correct: "right" },
+
+  // 減価償却（間接法）
+  { q: "賃貸用建物の減価償却を計上した。『建物減価償却費』は？", correct: "left" },
+  { q: "賃貸用建物の減価償却を計上した。『建物減価償却費累計額』は？", correct: "right" },
+
+  // 売却（建物/土地）
+  { q: "建物を売却し、売却益が出た。『建物売却益』は？", correct: "right" },
+  { q: "建物を売却し、売却損が出た。『建物売却損』は？", correct: "left" },
+
+  { q: "土地を売却し、固定資産売却益が出た。『固定資産売却益』は？", correct: "right" },
+  { q: "土地を売却し、固定資産売却損が出た。『固定資産売却損』は？", correct: "left" },
+
+  // 受取家賃（売却ではなく賃貸）と混同対策
+  { q: "賃貸用建物の家賃収入が発生した。『受取家賃』は？", correct: "right" }
+];
+
+let questions = JSON.parse(JSON.stringify(set_fudosan));
+let idx = 0, ok = 0, ng = 0, streak = 0;
+let results = [];
+
+const elQ = document.getElementById('question');
+const elSub = document.getElementById('sub');
+const elIdx = document.getElementById('idx');
+const elTotal = document.getElementById('total');
+const elOk = document.getElementById('ok');
+const elNg = document.getElementById('ng');
+const elStreak = document.getElementById('streak');
+const flash = document.getElementById('flash');
+const questionBox = document.getElementById('questionBox');
+const topLink = document.getElementById('topLink');
+
+elTotal.textContent = questions.length;
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function start(){
+  topLink.classList.remove('strong');
+  idx = 0; ok = 0; ng = 0; streak = 0;
+  results = [];
+  questions = shuffle([...questions]);
+  elTotal.textContent = questions.length;
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+  next();
+}
+
+function next(){
+  if (idx >= questions.length){
+    showResults();
+    return;
+  }
+  const item = questions[idx];
+  elQ.textContent = item.q;
+  elIdx.textContent = idx+1;
+  elSub.textContent = '左=借方 / 右=貸方';
+}
+
+function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
+
+let audioCtx = null;
+function beep(okFlag=true){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = okFlag ? 880 : 220;
+    g.gain.value = 0.02;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    setTimeout(()=>{ o.stop(); }, 120);
+  }catch(e){}
+}
+
+function judge(side){
+  if (idx >= questions.length) return;
+  const item = questions[idx];
+  const isOK = (side === item.correct);
+
+  results.push({
+    no: idx+1,
+    question: item.q,
+    answered: side,
+    correct: item.correct,
+    isOK: isOK
+  });
+
+  showFlash(isOK);
+  if (isOK){ ok++; streak++; vibrate(20); beep(true); }
+  else { ng++; streak=0; vibrate([30,40,30]); beep(false); }
+
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+
+  idx++;
+  setTimeout(next, 600);
+}
+
+function showFlash(isOK){
+  flash.className = isOK ? 'ok' : 'ng';
+  flash.textContent = isOK ? '⭕' : '❌';
+  flash.style.display = 'flex';
+  setTimeout(()=>{ flash.style.display='none'; }, 350);
+}
+
+function showResults(){
+  topLink.classList.add('strong');
+
+  const total = questions.length;
+  const percent = total ? Math.round(ok / total * 100) : 0;
+
+  let growthHtml = "";
+  if (total > 0 && ok === total) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌸</div>
+        <div class="small-muted">全問正解！花が咲きました。</div>
+      </div>
+    `;
+  } else if (ok <= 5) {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌱</div>
+        <div class="small-muted">今日は種まきの日。少しずつ育てていきましょう。</div>
+      </div>
+    `;
+  } else {
+    growthHtml = `
+      <div class="growth-box">
+        <div class="growth-emoji">🌿</div>
+        <div class="small-muted">芽が出てきました。続ければきっと満開になります。</div>
+      </div>
+    `;
+  }
+
+  let html = "";
+  html += growthHtml;
+  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
+  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
+
+  results.forEach(r => {
+    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
+    const badgeLabel = r.isOK ? '○' : '×';
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+
+    html += `<div class="result-item">
+      <span class="badge ${badgeClass}">${badgeLabel}</span>
+      <strong>${r.no}. ${r.question}</strong><br>
+      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
+    </div>`;
+  });
+
+  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
+
+  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
+  results.forEach(r => {
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+    const status = r.isOK ? "正解" : "不正解";
+    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
+    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
+  });
+
+  html += `<div style="margin-top:10px;">
+    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
+    <textarea readonly onclick="this.select()">${textReport}</textarea>
+  </div>`;
+
+  questionBox.innerHTML = html;
+  elIdx.textContent = total;
+  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
+}
+
+document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
+document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
+document.getElementById('btnStart').addEventListener('click', start);
+document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
+
+window.addEventListener('keydown', (e)=>{
+  if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
+  else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
+  else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
+});
+</script>
+</body>
+</html>
