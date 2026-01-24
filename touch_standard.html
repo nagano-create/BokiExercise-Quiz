@@ -32,7 +32,7 @@
     background:var(--card);
     display:flex;
     align-items:center;
-    justify-content:center; /* 中央寄せの基礎 */
+    justify-content:center;
     gap:10px;
   }
 
@@ -51,7 +51,7 @@
     -webkit-backdrop-filter: blur(6px);
     padding:6px 12px;
     border-radius:999px;
-    opacity:.65; /* 問題中は半透明 */
+    opacity:.65;
     transition: opacity .15s ease, background .15s ease, transform .05s ease;
     display:inline-flex;
     align-items:center;
@@ -59,7 +59,7 @@
   }
   .top-link:active{ transform:scale(.98); }
   body.results .top-link{
-    opacity:1; /* 結果画面では強調 */
+    opacity:1;
     background:rgba(23,26,33,.92);
   }
 
@@ -91,7 +91,7 @@
     padding:14px 16px 10px;
     text-align:center;
     overflow-y:auto;
-    max-height:38vh;  /* 問題文と結果が見えるように */
+    max-height:38vh;
   }
   #question{
     margin:6px 0 4px;
@@ -172,37 +172,9 @@
   #flash.ng{ background:rgba(255,77,79,.12); color:var(--ng); }
 
   /* ===== Results ===== */
-  .result-item{
-    font-size:14px;
-    margin-bottom:8px;
-    text-align:left;
-  }
-  .badge{
-    display:inline-block;
-    min-width:2.2em;
-    text-align:center;
-    border-radius:999px;
-    padding:0 6px;
-    margin-right:6px;
-    font-size:12px;
-  }
-  .badge-ok{ background:rgba(29,185,84,.15); color:var(--ok); }
-  .badge-ng{ background:rgba(255,77,79,.15); color:var(--ng); }
   .small-muted{ font-size:11px; color:var(--muted); }
-
   .growth-emoji{ font-size:110px; line-height:1.05; }
   .growth-box{ text-align:center; margin:8px 0 10px; }
-
-  textarea{
-    width:100%;
-    min-height:120px;
-    background:#0f1319;
-    color:var(--fg);
-    border:1px solid var(--bd);
-    border-radius:10px;
-    padding:10px;
-    font-size:12px;
-  }
 
   #footerNote{
     text-align:center;
@@ -219,7 +191,7 @@
 <div id="app">
   <header>
     <div class="title" aria-label="BokiExercise 左右タッチ即判定">
-      <div class="t1">BokiExercise</div>
+      <div class="t2">BokiExercise</div>
       <div class="t2">左右タッチ即判定</div>
     </div>
     <div class="pill">標準</div>
@@ -227,7 +199,7 @@
 
   <div id="questionBox">
     <div id="question">スタートを押してください</div>
-    <div id="sub">左右＝借方／貸方（●点=🌱、●点=🌿、満点=🌸）</div>
+    <div id="sub">左右＝借方／貸方（0〜5=🌱、6〜14=🌿、満点=🌸）</div>
   </div>
 
   <div id="arena">
@@ -245,7 +217,7 @@
   </div>
 
   <div id="controls">
-    <button id="btnStart">スタート / シャッフル</button>
+    <button id="btnStart">スタート</button>
   </div>
 
   <div id="footerNote">© BokiExercise</div>
@@ -256,12 +228,8 @@
 <script>
 /* =========================================================
    ▼▼▼ ここだけ編集OK（問題文の差し替え専用） ▼▼▼
-   ルール：
-   - set_standard の中身だけ変更してOK
-   - それ以外（CSS/HTML/共通JS）は触らない
 ========================================================= */
 
-// 3級仕訳標準（15問）
 const set_standard = [
   { q: "資産（現金・売掛金など）が『増加』するのは？", correct: "left" },
   { q: "資産（現金・売掛金など）が『減少』するのは？", correct: "right" },
@@ -286,16 +254,29 @@ const set_standard = [
 let questions = JSON.parse(JSON.stringify(set_standard));
 let idx = 0, ok = 0, ng = 0;
 
-const elQ = document.getElementById('question');
-const elSub = document.getElementById('sub');
+// ★結果表示で#question/#subが消えるので、復元用テンプレを保持
+const questionBox = document.getElementById('questionBox');
+const QUESTION_UI_HTML = `
+  <div id="question">スタートを押してください</div>
+  <div id="sub">左右＝借方／貸方（0〜5=🌱、6〜14=🌿、満点=🌸）</div>
+`;
+
+// DOM参照は「復元後に取り直す」必要があるので let
+let elQ = document.getElementById('question');
+let elSub = document.getElementById('sub');
+
 const elIdx = document.getElementById('idx');
 const elTotal = document.getElementById('total');
 const elOk = document.getElementById('ok');
 const elNg = document.getElementById('ng');
 const flash = document.getElementById('flash');
-const questionBox = document.getElementById('questionBox');
 
 elTotal.textContent = questions.length;
+
+function bindQuestionEls(){
+  elQ = document.getElementById('question');
+  elSub = document.getElementById('sub');
+}
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -306,7 +287,11 @@ function shuffle(a){
 }
 
 function start(){
+  // ★結果画面から戻るときにUIを復元
   document.body.classList.remove('results');
+  questionBox.innerHTML = QUESTION_UI_HTML;
+  bindQuestionEls();
+
   idx = 0; ok = 0; ng = 0;
   questions = shuffle([...questions]);
   elOk.textContent = ok;
@@ -323,7 +308,7 @@ function next(){
   const item = questions[idx];
   elQ.textContent = item.q;
   elIdx.textContent = idx+1;
-  elSub.textContent = "左／右＝借方／貸方（発芽🌱、成長🌿、満開🌸）";
+  elSub.textContent = "左／右＝借方／貸方（0〜5=🌱、6〜14=🌿、満点=🌸）";
 }
 
 function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
@@ -373,26 +358,22 @@ function showResults(){
   const total = questions.length;
   const percent = total ? Math.round(ok / total * 100) : 0;
 
-  // 成長表示：0-5=🌱 / 6-14=🌿 / 満点=🌸
   let emoji = "🌿";
   let msg   = "芽が出てきました。続ければきっと満開になります。";
   if (ok === total) { emoji="🌸"; msg="全問正解！花が咲きました。"; }
   else if (ok <= 5) { emoji="🌱"; msg="今日は種まきの日。少しずつ育てていきましょう。"; }
 
-  let html = "";
-  html += `
+  questionBox.innerHTML = `
     <div class="growth-box">
       <div class="growth-emoji">${emoji}</div>
       <div class="small-muted">${msg}</div>
     </div>
+    <div style="margin-bottom:10px;font-size:18px;font-weight:700;">結果</div>
+    <div class="small-muted" style="margin-bottom:12px;">正解 ${ok} / ${total}（${percent}%）</div>
+    <div class="small-muted">※もう一度やる場合は「スタート / シャッフル」を押してください。</div>
   `;
-  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:700;">結果</div>`;
-  html += `<div class="small-muted" style="margin-bottom:12px;">正解 ${ok} / ${total}（${percent}%）</div>`;
-  html += `<div class="small-muted" style="margin-bottom:10px;">※もう一度やる場合は「スタート / シャッフル」を押してください。</div>`;
 
-  questionBox.innerHTML = html;
   elIdx.textContent = total;
-  elSub.textContent = 'お疲れさまでした。';
 }
 
 // UI
