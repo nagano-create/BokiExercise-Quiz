@@ -2,141 +2,312 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>BokiExercise 左右タッチ即判定クイズ（基礎2：固定資産）</title>
+<title>BokiExercise 左右タッチ即判定（固定資産）</title>
+
 <style>
-  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP",
-    "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "YuGothic", "Meiryo", sans-serif; }
+  :root{
+    --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6;
+    --ok:#1db954; --ng:#ff4d4f; --card:#171a21; --bd:#2b2f3a;
+  }
+  *{ box-sizing:border-box; }
 
-  #app { display:flex; flex-direction:column; height:100%; max-width: 720px; margin: 0 auto; }
+  html,body{
+    height:100%;
+    margin:0;
+    background:var(--bg);
+    color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI","YuGothic","Meiryo",sans-serif;
+    overflow:hidden; /* 横スクロールバー封じ */
+  }
 
-  /* header（統一） */
+  /* Topリンク（左上固定） */
+  .top-link{
+    position: fixed;
+    left: 12px; top: 10px;
+    z-index: 60;
+    font-size:12px;
+    color: var(--fg);
+    text-decoration:none;
+    border:1px solid var(--bd);
+    background: rgba(15,17,21,.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding:6px 12px;
+    border-radius:999px;
+    opacity:.65;
+    transition: opacity .15s ease, background .15s ease, transform .05s ease, box-shadow .2s ease, border-color .2s ease;
+    display:inline-flex;
+    gap:6px;
+    align-items:center;
+    white-space:nowrap;
+    user-select:none;
+  }
+  .top-link:active{ transform: scale(.98); }
+
+  /* 結果画面では Top を強調（色が付く） */
+  body.results .top-link{
+    opacity: 1;
+    background: rgba(23,26,33,.96);
+    border-color: rgba(29,185,84,.55);
+    box-shadow:
+      0 0 0 2px rgba(29,185,84,.12),
+      0 8px 22px rgba(0,0,0,.35),
+      0 0 18px rgba(29,185,84,.12);
+  }
+  body.results .top-link .arrow{
+    animation: nudge 1.1s ease-in-out infinite;
+  }
+  @keyframes nudge{
+    0%,100%{ transform: translateX(0); }
+    50%{ transform: translateX(-3px); }
+  }
+
+  /* アプリ枠 */
+  #app{
+    height: 100svh;
+    max-width: 720px;
+    margin: 0 auto;
+    display:flex;
+    flex-direction:column;
+  }
+
   header{
     padding: 12px 16px;
     background: var(--card);
-    display:flex; align-items:center; gap:10px;
-    position: sticky; top: 0; z-index: 20;
+    display:flex;
+    align-items:center;
+    justify-content:center; /* 中央寄せ */
+    position:relative;
+    border-bottom:1px solid rgba(43,47,58,.35);
   }
-  header h1 { font-size: 16px; margin: 0; flex:1; line-height: 1.2; }
-  .pill { padding: 2px 8px; border:1px solid #2b2f3a; border-radius:999px; font-size:11px; color: var(--muted); white-space:nowrap; }
 
-  /* Top（左上固定/控えめ→結果で強調） */
-  .top-link{
-    font-size:12px;
-    color: var(--muted);
-    text-decoration:none;
-    border:1px solid #2b2f3a;
-    padding:4px 10px;
+  /* タイトル：2行・同じサイズ */
+  .title{
+    text-align:center;
+    line-height:1.08;
+    user-select:none;
+  }
+  .title .t1,
+  .title .t2{
+    font-size: 16px;   /* 同じサイズ */
+    font-weight: 800;
+    letter-spacing: .02em;
+  }
+  .title .t2{ margin-top:2px; }
+
+  .pill{
+    position:absolute;
+    right:16px;
+    top:50%;
+    transform:translateY(-50%);
+    padding: 2px 10px;
+    border:1px solid var(--bd);
     border-radius:999px;
-    display:inline-block;
+    font-size:11px;
+    color: var(--muted);
     white-space:nowrap;
-    opacity:.65;
-    background: rgba(15,19,25,.35);
+    user-select:none;
   }
-  .top-link:active{ opacity:.7; transform: scale(.98); }
-  body.results-mode .top-link{
-    opacity: 1;
+
+  /* 成長表示：絵だけ */
+  #growthBar{
+    padding:8px 10px;
+    display:flex;
+    justify-content:center;
+    background: rgba(23,26,33,.55);
+    border-bottom:1px solid rgba(43,47,58,.35);
+  }
+  #growthEmoji{
+    font-size: 22px;
+    line-height: 1;
+    user-select:none;
+  }
+
+  /* 問題表示（クイズ中はスクロールしない） */
+  #questionBox{
+    padding: 14px 16px 10px;
+    text-align:center;
+    overflow:hidden;        /* 右スクロールバー封じ */
+    flex:0 0 auto;
+  }
+  body.results #questionBox{
+    overflow:auto;          /* 結果画面だけスクロール可（一覧が長いので必要） */
+    text-align:left;
+    max-height: 52vh;
+  }
+
+  #question{
+    margin: 6px 0 4px;
+    font-weight: 800;
+    font-size: clamp(20px, 3.2vw, 30px);
+    line-height:1.35;
+    text-align:center;
+    overflow-wrap:anywhere;
+    min-height: 1.35em;
+  }
+  body.results #question{ text-align:left; }
+
+  #sub{
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* 左右タッチ面：最大化（小さくしない） */
+  #arena{
+    flex: 1 1 auto;
+    display:flex;
+    min-height: 240px;
+    /* ▼ 固定ボタンがかぶらないための余白 */
+    margin-bottom: calc(86px + env(safe-area-inset-bottom));
+  }
+  body.results #arena{ opacity:.25; pointer-events:none; }
+
+  .side{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: clamp(30px, 7vw, 46px);
+    font-weight:900;
+    border-top:1px solid #222;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .left{
+    border-right:1px solid #222;
+    background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.08));
+  }
+  .right{
+    background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.08));
+  }
+  .label{ pointer-events:none; opacity:.92; }
+
+  #scoreBar{
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    border-top:1px solid rgba(43,47,58,.35);
+  }
+
+  /* フッター：固定ボタンに隠れないよう余白 */
+  #footerNote{
+    text-align:center;
+    font-size:11px;
+    color: var(--muted);
+    padding: 8px 0 12px;
+    margin-bottom: calc(86px + env(safe-area-inset-bottom));
+  }
+
+  /* スタートボタン：常に画面下に固定（スマホで消えない） */
+  #controls{
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: min(720px, calc(100% - 24px));
+    z-index: 55;
+    display:flex;
+    justify-content:center;
+    pointer-events:none;
+  }
+  #btnStart{
+    pointer-events:auto;
+    width: 100%;
+    max-width: 420px;
+    padding: 14px 14px;
+    border: 1px solid var(--bd);
+    background:#1c222b;
     color: var(--fg);
-    border-color: #3a4252;
-    background: rgba(28,34,43,.85);
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor:pointer;
   }
+  #btnStart:active{ transform: scale(.99); }
 
-  #questionBox {
-    padding: 18px 16px;
-    text-align: center;
-    font-size: clamp(20px, 6vw, 32px);
-    line-height:1.4;
-    overflow-y:auto;
-    max-height: 40vh;
-  }
-  #question { margin: 6px 0 4px; font-weight: 600; text-align: center; }
-  #sub { font-size: 12px; color: var(--muted); }
-
-  #arena { flex:1; display:flex; }
-  .side {
-    flex:1; display:flex; align-items:center; justify-content:center;
-    font-size: clamp(28px, 8vw, 44px); font-weight:700;
-    border-top:1px solid #222; user-select: none; -webkit-tap-highlight-color: transparent;
-  }
-  .left  { border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
-  .right { background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.1)); }
-  .label { pointer-events: none; opacity:.9; }
-
-  #scoreBar { padding: 8px 16px; font-size: 13px; color: var(--muted); display:flex; justify-content:space-between; }
-
-  #controls { display:flex; gap:8px; padding: 12px 16px; background: var(--card); }
-  button {
-    flex:1; padding: 12px;
-    border: 1px solid #2b2f3a; background:#1c222b; color: var(--fg);
-    border-radius:10px; font-size:14px; cursor:pointer;
-  }
-  button:active { transform: scale(.98); }
-
-  #flash {
-    position: fixed; inset: 0; display:none; align-items:center; justify-content:center;
+  #flash{
+    position: fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
     font-size: clamp(56px, 18vw, 120px);
-    font-weight:900; z-index: 30;
+    font-weight:900;
+    z-index: 80;
   }
-  #flash.ok { background: rgba(29,185,84,.12); color: var(--ok); }
-  #flash.ng { background: rgba(255,77,79,.12); color: var(--ng); }
+  #flash.ok{ background: rgba(29,185,84,.12); color: var(--ok); }
+  #flash.ng{ background: rgba(255,77,79,.12); color: var(--ng); }
 
-  #footerNote { text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; }
+  /* 結果 */
+  .result-item{ font-size:14px; margin-bottom:10px; }
+  .badge{
+    display:inline-block;
+    min-width:2.2em;
+    text-align:center;
+    border-radius:999px;
+    padding:0 8px;
+    margin-right:6px;
+    font-size:12px;
+    border:1px solid rgba(43,47,58,.55);
+  }
+  .badge-ok{ background:rgba(29,185,84,.15); color:var(--ok); }
+  .badge-ng{ background:rgba(255,77,79,.15); color:var(--ng); }
+  .small-muted{ font-size:11px; color:var(--muted); }
 
-  .result-item { font-size:14px; margin-bottom:8px; text-align:left; }
-  .result-item span.badge { display:inline-block; min-width:2.2em; text-align:center; border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;}
-  .badge-ok { background:rgba(29,185,84,.15); color:var(--ok); }
-  .badge-ng { background:rgba(255,77,79,.15); color:var(--ng); }
-  .small-muted { font-size:11px; color:var(--muted); }
-
-  .growth-emoji { font-size: 120px; line-height: 1.1; }
-  .growth-box { text-align:center; margin-bottom:12px; }
-
-  textarea { width:100%; min-height:120px; background:#0f1319; color:var(--fg); border:1px solid #2b2f3a; border-radius:8px; padding:10px; font-size:12px; }
+  .growth-emoji-big{ font-size:110px; line-height:1.05; text-align:center; }
+  .growth-box{ text-align:center; margin:8px 0 10px; }
 </style>
 </head>
+
 <body>
+<a class="top-link" href="index.html" aria-label="トップへ戻る"><span class="arrow" aria-hidden="true">←</span><span>Top</span></a>
+
 <div id="app">
   <header>
-    <a class="top-link" href="index.html">Top</a>
-    <h1>BokiExercise 左右タッチ即判定クイズ</h1>
-    <div class="pill">3級仕訳基礎2.固定資産</div>
+    <div class="title" aria-label="BokiExercise 左右タッチ即判定">
+      <div class="t2">BokiExercise</div>
+      <div class="t2">左右タッチ即判定</div>
+    </div>
+    <div class="pill">基礎03.固定資産</div>
   </header>
 
+  <div id="growthBar"><div id="growthEmoji">🌰</div></div>
+
   <div id="questionBox">
-    <div id="question">スタートを押してください</div>
-    <div id="sub">※ 左右＝借方/貸方。満点で🌸演出。</div>
+    <div id="question"></div>
+    <div id="sub">左／右＝借方／貸方（満点🌸）</div>
   </div>
 
   <div id="arena">
-    <div class="side left"  id="leftSide"  role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
-    <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
+    <div class="side left" id="leftSide" role="button" aria-label="左"><div class="label">左</div></div>
+    <div class="side right" id="rightSide" role="button" aria-label="右"><div class="label">右</div></div>
   </div>
 
   <div id="scoreBar">
     <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
-    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
-  </div>
-
-  <div id="controls">
-    <button id="btnStart">スタート / シャッフル</button>
-    <button id="btnReset">リセット</button>
+    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span></div>
   </div>
 
   <div id="footerNote">© BokiExercise</div>
 </div>
 
+<div id="controls">
+  <button id="btnStart">スタート / シャッフル</button>
+</div>
+
 <div id="flash"></div>
 
 <script>
-/* =======================
-   基礎2：固定資産（15問）
-   ※ 左=借方 / 右=貸方
-======================= */
-const set_kotei = [
+// =======================
+// ▼ 3級仕訳基礎03.固定資産（15問） ▼
+// =======================
+const set_standard = [
   { q: "建物を現金で購入したときの『建物』は？", correct: "left" },
   { q: "建物を現金で購入したときの『現金』は？", correct: "right" },
 
@@ -160,22 +331,39 @@ const set_kotei = [
 
   { q: "備品を掛けで購入していた未払金を、後日現金で支払った。『未払金』は？", correct: "left" }
 ];
+  
+let questions = JSON.parse(JSON.stringify(set_standard));
 
-let questions = JSON.parse(JSON.stringify(set_kotei));
-let idx = 0, ok = 0, ng = 0, streak = 0;
+
+let idx = 0, ok = 0, ng = 0;
 let results = [];
 
-const elQ = document.getElementById('question');
-const elSub = document.getElementById('sub');
-const elIdx = document.getElementById('idx');
-const elTotal = document.getElementById('total');
-const elOk = document.getElementById('ok');
-const elNg = document.getElementById('ng');
-const elStreak = document.getElementById('streak');
 const flash = document.getElementById('flash');
 const questionBox = document.getElementById('questionBox');
 
+const elTotal = document.getElementById('total');
+const elIdx = document.getElementById('idx');
+const elOk = document.getElementById('ok');
+const elNg = document.getElementById('ng');
+const growthEmoji = document.getElementById('growthEmoji');
+
 elTotal.textContent = questions.length;
+
+function setGrowthEmoji(){
+  const total = questions.length;
+  if (total > 0 && ok === total) growthEmoji.textContent = "🌸";
+  else if (ok >= 6) growthEmoji.textContent = "🌿";
+  else if (ok >= 1) growthEmoji.textContent = "🌱";
+  else growthEmoji.textContent = "🌰";
+}
+
+/* ▼ 結果表示で questionBox を上書きしても、開始時に必ず元へ戻す */
+function resetQuestionBoxUI(){
+  questionBox.innerHTML = `
+    <div id="question"></div>
+    <div id="sub">左／右＝借方／貸方（満点🌸）</div>
+  `;
+}
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -186,12 +374,19 @@ function shuffle(a){
 }
 
 function start(){
-  document.body.classList.remove('results-mode');
-  idx = 0; ok = 0; ng = 0; streak = 0;
-  results = [];
+  document.body.classList.remove('results');
+
+  resetQuestionBoxUI(); // ←ここが重要（スタートが効かない原因を潰す）
+
+  idx = 0; ok = 0; ng = 0; results = [];
   questions = shuffle([...questions]);
+
+  elOk.textContent = ok;
+  elNg.textContent = ng;
+  elIdx.textContent = 0;
   elTotal.textContent = questions.length;
-  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+
+  setGrowthEmoji();
   next();
 }
 
@@ -201,9 +396,9 @@ function next(){
     return;
   }
   const item = questions[idx];
-  elQ.textContent = item.q;
-  elIdx.textContent = idx+1;
-  elSub.textContent = '※ 左右＝借方/貸方。満点で🌸演出。';
+  const elQuestion = document.getElementById('question');
+  elQuestion.textContent = item.q;
+  elIdx.textContent = idx + 1;
 }
 
 function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
@@ -223,6 +418,13 @@ function beep(okFlag=true){
   }catch(e){}
 }
 
+function showFlash(isOK){
+  flash.className = isOK ? 'ok' : 'ng';
+  flash.textContent = isOK ? '⭕' : '❌';
+  flash.style.display = 'flex';
+  setTimeout(()=>{ flash.style.display='none'; }, 350);
+}
+
 function judge(side){
   if (idx >= questions.length) return;
   const item = questions[idx];
@@ -233,106 +435,88 @@ function judge(side){
     question: item.q,
     answered: side,
     correct: item.correct,
-    isOK: isOK
+    isOK
   });
 
   showFlash(isOK);
-  if (isOK){ ok++; streak++; vibrate(20); beep(true); }
-  else { ng++; streak=0; vibrate([30,40,30]); beep(false); }
+  if (isOK){ ok++; vibrate(20); beep(true); }
+  else { ng++; vibrate([30,40,30]); beep(false); }
 
-  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+  elOk.textContent = ok;
+  elNg.textContent = ng;
+  setGrowthEmoji();
 
   idx++;
   setTimeout(next, 600);
 }
 
-function showFlash(isOK){
-  flash.className = isOK ? 'ok' : 'ng';
-  flash.textContent = isOK ? '⭕' : '❌';
-  flash.style.display = 'flex';
-  setTimeout(()=>{ flash.style.display='none'; }, 350);
-}
-
 function showResults(){
-  document.body.classList.add('results-mode');
+  document.body.classList.add('results');
+
   const total = questions.length;
   const percent = total ? Math.round(ok / total * 100) : 0;
 
-  let growthHtml = "";
-  if (total > 0 && ok === total) {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌸</div>
-        <div class="small-muted">全問正解！花が咲きました。</div>
-      </div>
-    `;
-  } else if (ok <= 5) {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌱</div>
-        <div class="small-muted">今日は種まきの日。少しずつ育てていきましょう。</div>
-      </div>
-    `;
-  } else {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌿</div>
-        <div class="small-muted">芽が出てきました。続ければきっと満開になります。</div>
-      </div>
-    `;
-  }
+  let bigEmoji = "🌿";
+  let msg = "芽が出てきました。続ければきっと満開になります。";
+  if (ok === total) { bigEmoji="🌸"; msg="全問正解！花が咲きました。"; }
+  else if (ok <= 5) { bigEmoji="🌱"; msg="今日は種まきの日。少しずつ育てていきましょう。"; }
 
   let html = "";
-  html += growthHtml;
-  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:600;">結果一覧</div>`;
-  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}　（${percent}%）</div>`;
+  html += `
+    <div class="growth-box">
+      <div class="growth-emoji-big">${bigEmoji}</div>
+      <div class="small-muted" style="text-align:center;">${msg}</div>
+    </div>
+    <div style="margin:8px 0 10px; font-size:18px; font-weight:800;">結果一覧</div>
+    <div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}（${percent}%）</div>
+  `;
 
-  results.forEach(r => {
-    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
-    const badgeLabel = r.isOK ? '○' : '×';
-    const answeredJp = r.answered === 'left' ? '左' : '右';
-    const correctJp  = r.correct  === 'left' ? '左' : '右';
-
-    html += `<div class="result-item">
-      <span class="badge ${badgeClass}">${badgeLabel}</span>
-      <strong>${r.no}. ${r.question}</strong><br>
-      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
-    </div>`;
+  results.forEach(r=>{
+    const badgeClass = r.isOK ? "badge-ok" : "badge-ng";
+    const badgeLabel = r.isOK ? "○" : "×";
+    const answeredJp = r.answered === "left" ? "左" : "右";
+    const correctJp  = r.correct  === "left" ? "左" : "右";
+    html += `
+      <div class="result-item">
+        <span class="badge ${badgeClass}">${badgeLabel}</span>
+        <strong>${r.no}. ${escapeHtml(r.question)}</strong><br>
+        <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
+      </div>
+    `;
   });
 
-  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
-
-  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
-  results.forEach(r => {
-    const answeredJp = r.answered === 'left' ? '左' : '右';
-    const correctJp  = r.correct  === 'left' ? '左' : '右';
-    const status = r.isOK ? "正解" : "不正解";
-    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
-    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
-  });
-
-  html += `<div style="margin-top:10px;">
-    <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
-    <textarea readonly onclick="this.select()">${textReport}</textarea>
-  </div>`;
-
+  /* コピー用テキストは削除（要望1） */
   questionBox.innerHTML = html;
+
   elIdx.textContent = total;
-  elSub.textContent = 'お疲れさまでした。上の一覧と下のテキストで振り返りができます。';
+  setGrowthEmoji();
+  questionBox.scrollTop = 0;
 }
 
-/* UI操作 */
+function escapeHtml(s){
+  return String(s)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+// UI
 document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
 document.getElementById('btnStart').addEventListener('click', start);
-document.getElementById('btnReset').addEventListener('click', ()=>{ window.location.reload(); });
 
-/* PC授業向け：Space=左 / Enter,→=右 / ←=左 */
+// PC授業向け：Space=左 / Enter,→=右 / ←=左
 window.addEventListener('keydown', (e)=>{
   if (e.code === 'Space' || e.key === ' ') { judge('left'); e.preventDefault(); }
   else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
   else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
 });
+
+// 初期（スタート前）
+resetQuestionBoxUI();
+setGrowthEmoji();
 </script>
 </body>
 </html>
