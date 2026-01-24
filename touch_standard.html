@@ -64,14 +64,13 @@
     50%{ transform: translateX(-3px); }
   }
 
-  /* アプリ枠：下の固定ボタン分の余白を確保 */
+  /* アプリ枠 */
   #app{
     height: 100svh;
     max-width: 720px;
     margin: 0 auto;
     display:flex;
     flex-direction:column;
-    padding-bottom: calc(84px + env(safe-area-inset-bottom)); /* 固定ボタンの分 */
   }
 
   header{
@@ -92,7 +91,7 @@
   }
   .title .t1,
   .title .t2{
-    font-size: 16px;   /* ←同じサイズ */
+    font-size: 16px;   /* 同じサイズ */
     font-weight: 800;
     letter-spacing: .02em;
   }
@@ -130,11 +129,11 @@
   #questionBox{
     padding: 14px 16px 10px;
     text-align:center;
-    overflow:hidden;        /* ←右スクロールバー封じ */
+    overflow:hidden;        /* 右スクロールバー封じ */
     flex:0 0 auto;
   }
   body.results #questionBox{
-    overflow:auto;          /* 結果画面だけスクロール可 */
+    overflow:auto;          /* 結果画面だけスクロール可（一覧が長いので必要） */
     text-align:left;
     max-height: 52vh;
   }
@@ -156,12 +155,16 @@
     margin-top: 6px;
   }
 
-  /* 左右タッチ面：従来どおり最大化（小さくしない） */
+  /* 左右タッチ面：最大化（小さくしない） */
   #arena{
     flex: 1 1 auto;
     display:flex;
     min-height: 240px;
+    /* ▼ 固定ボタンがかぶらないための余白 */
+    margin-bottom: calc(86px + env(safe-area-inset-bottom));
   }
+  body.results #arena{ opacity:.25; pointer-events:none; }
+
   .side{
     flex:1;
     display:flex;
@@ -182,8 +185,6 @@
   }
   .label{ pointer-events:none; opacity:.92; }
 
-  body.results #arena{ opacity:.25; pointer-events:none; }
-
   #scoreBar{
     padding: 8px 16px;
     font-size: 13px;
@@ -194,11 +195,13 @@
     border-top:1px solid rgba(43,47,58,.35);
   }
 
+  /* フッター：固定ボタンに隠れないよう余白 */
   #footerNote{
     text-align:center;
     font-size:11px;
     color: var(--muted);
     padding: 8px 0 12px;
+    margin-bottom: calc(86px + env(safe-area-inset-bottom));
   }
 
   /* スタートボタン：常に画面下に固定（スマホで消えない） */
@@ -211,7 +214,7 @@
     z-index: 55;
     display:flex;
     justify-content:center;
-    pointer-events:none; /* 中のボタンだけ押せるように */
+    pointer-events:none;
   }
   #btnStart{
     pointer-events:auto;
@@ -259,17 +262,6 @@
 
   .growth-emoji-big{ font-size:110px; line-height:1.05; text-align:center; }
   .growth-box{ text-align:center; margin:8px 0 10px; }
-
-  textarea{
-    width:100%;
-    min-height:140px;
-    background:#0f1319;
-    color:var(--fg);
-    border:1px solid var(--bd);
-    border-radius:10px;
-    padding:10px;
-    font-size:12px;
-  }
 </style>
 </head>
 
@@ -337,28 +329,31 @@ let questions = JSON.parse(JSON.stringify(set_standard));
 let idx = 0, ok = 0, ng = 0;
 let results = [];
 
-const elQuestion = document.getElementById('question');
-const elIdx = document.getElementById('idx');
-const elTotal = document.getElementById('total');
-const elOk = document.getElementById('ok');
-const elNg = document.getElementById('ng');
 const flash = document.getElementById('flash');
 const questionBox = document.getElementById('questionBox');
+
+const elTotal = document.getElementById('total');
+const elIdx = document.getElementById('idx');
+const elOk = document.getElementById('ok');
+const elNg = document.getElementById('ng');
 const growthEmoji = document.getElementById('growthEmoji');
 
 elTotal.textContent = questions.length;
 
 function setGrowthEmoji(){
   const total = questions.length;
-  if (total > 0 && ok === total){
-    growthEmoji.textContent = "🌸";
-  } else if (ok >= 6){
-    growthEmoji.textContent = "🌿";
-  } else if (ok >= 1){
-    growthEmoji.textContent = "🌱";
-  } else {
-    growthEmoji.textContent = "🌰";
-  }
+  if (total > 0 && ok === total) growthEmoji.textContent = "🌸";
+  else if (ok >= 6) growthEmoji.textContent = "🌿";
+  else if (ok >= 1) growthEmoji.textContent = "🌱";
+  else growthEmoji.textContent = "🌰";
+}
+
+/* ▼ 結果表示で questionBox を上書きしても、開始時に必ず元へ戻す */
+function resetQuestionBoxUI(){
+  questionBox.innerHTML = `
+    <div id="question"></div>
+    <div id="sub">左／右＝借方／貸方（満点🌸）</div>
+  `;
 }
 
 function shuffle(a){
@@ -371,6 +366,9 @@ function shuffle(a){
 
 function start(){
   document.body.classList.remove('results');
+
+  resetQuestionBoxUI(); // ←ここが重要（スタートが効かない原因を潰す）
+
   idx = 0; ok = 0; ng = 0; results = [];
   questions = shuffle([...questions]);
 
@@ -389,6 +387,7 @@ function next(){
     return;
   }
   const item = questions[idx];
+  const elQuestion = document.getElementById('question');
   elQuestion.textContent = item.q;
   elIdx.textContent = idx + 1;
 }
@@ -468,7 +467,6 @@ function showResults(){
     const badgeLabel = r.isOK ? "○" : "×";
     const answeredJp = r.answered === "left" ? "左" : "右";
     const correctJp  = r.correct  === "left" ? "左" : "右";
-
     html += `
       <div class="result-item">
         <span class="badge ${badgeClass}">${badgeLabel}</span>
@@ -478,25 +476,9 @@ function showResults(){
     `;
   });
 
-  html += `<div class="small-muted" style="margin-top:14px;">下にコピー用テキストがあります（Excel貼り付けなどに利用できます）。</div>`;
-
-  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
-  results.forEach(r=>{
-    const answeredJp = r.answered === "left" ? "左" : "右";
-    const correctJp  = r.correct  === "left" ? "左" : "右";
-    const status = r.isOK ? "正解" : "不正解";
-    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
-    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
-  });
-
-  html += `
-    <div style="margin-top:10px;">
-      <label class="small-muted">結果コピー用テキスト（全選択→コピー）</label>
-      <textarea readonly onclick="this.select()">${textReport}</textarea>
-    </div>
-  `;
-
+  /* コピー用テキストは削除（要望1） */
   questionBox.innerHTML = html;
+
   elIdx.textContent = total;
   setGrowthEmoji();
   questionBox.scrollTop = 0;
@@ -524,6 +506,7 @@ window.addEventListener('keydown', (e)=>{
 });
 
 // 初期（スタート前）
+resetQuestionBoxUI();
 setGrowthEmoji();
 </script>
 </body>
