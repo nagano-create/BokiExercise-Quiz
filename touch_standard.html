@@ -2,27 +2,31 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>BokiExercise 左右タッチ即判定クイズ（標準）</title>
+<title>BokiExercise 左右タッチ即判定（標準）</title>
 
 <style>
-  :root { --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6; --ok:#1db954; --ng:#ff4d4f; --card:#171a21; --bd:#2b2f3a; }
+  :root{
+    --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6;
+    --ok:#1db954; --ng:#ff4d4f; --card:#171a21; --bd:#2b2f3a;
+  }
   *{ box-sizing:border-box; }
 
-  /* クイズ中に右スクロールバーが出ないように：ページ全体のスクロールを止める */
-  html, body { height:100%; margin:0; background:var(--bg); color:var(--fg);
+  html,body{
+    height:100%;
+    margin:0;
+    background:var(--bg);
+    color:var(--fg);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI","YuGothic","Meiryo",sans-serif;
-    overflow:hidden;
+    overflow:hidden; /* 横スクロールバー封じ */
   }
-
-  #app { display:flex; flex-direction:column; height:100vh; max-width:720px; margin:0 auto; }
 
   /* Topリンク（左上固定） */
   .top-link{
     position: fixed;
     left: 12px; top: 10px;
-    z-index: 50;
+    z-index: 60;
     font-size:12px;
     color: var(--fg);
     text-decoration:none;
@@ -37,12 +41,12 @@
     display:inline-flex;
     gap:6px;
     align-items:center;
-    user-select:none;
     white-space:nowrap;
+    user-select:none;
   }
   .top-link:active{ transform: scale(.98); }
 
-  /* 結果画面では Top を“点灯”させる */
+  /* 結果画面では Top を強調（色が付く） */
   body.results .top-link{
     opacity: 1;
     background: rgba(23,26,33,.96);
@@ -60,19 +64,39 @@
     50%{ transform: translateX(-3px); }
   }
 
+  /* アプリ枠：下の固定ボタン分の余白を確保 */
+  #app{
+    height: 100svh;
+    max-width: 720px;
+    margin: 0 auto;
+    display:flex;
+    flex-direction:column;
+    padding-bottom: calc(84px + env(safe-area-inset-bottom)); /* 固定ボタンの分 */
+  }
+
   header{
     padding: 12px 16px;
     background: var(--card);
     display:flex;
     align-items:center;
-    justify-content:center; /* 真ん中寄せ */
+    justify-content:center; /* 中央寄せ */
     position:relative;
+    border-bottom:1px solid rgba(43,47,58,.35);
   }
 
-  /* タイトルを2行に固定 */
-  .title{ text-align:center; line-height:1.05; user-select:none; }
-  .title .t1{ font-size:14px; font-weight:700; letter-spacing:.02em; }
-  .title .t2{ font-size:16px; font-weight:800; margin-top:2px; }
+  /* タイトル：2行・同じサイズ */
+  .title{
+    text-align:center;
+    line-height:1.08;
+    user-select:none;
+  }
+  .title .t1,
+  .title .t2{
+    font-size: 16px;   /* ←同じサイズ */
+    font-weight: 800;
+    letter-spacing: .02em;
+  }
+  .title .t2{ margin-top:2px; }
 
   .pill{
     position:absolute;
@@ -88,56 +112,77 @@
     user-select:none;
   }
 
-  /* 成長バー（回答中） */
-  #growthBar{ padding:6px 10px; display:flex; justify-content:center; background:rgba(23,26,33,.55); border-bottom:1px solid rgba(43,47,58,.35); }
-  #growthBadge{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:4px 10px; border:1px solid rgba(43,47,58,.7);
-    border-radius:999px; font-size:12px; user-select:none;
+  /* 成長表示：絵だけ */
+  #growthBar{
+    padding:8px 10px;
+    display:flex;
+    justify-content:center;
+    background: rgba(23,26,33,.55);
+    border-bottom:1px solid rgba(43,47,58,.35);
   }
-  #growthEmoji{ font-size:16px; line-height:1; }
-  #growthText{ color:var(--muted); }
+  #growthEmoji{
+    font-size: 22px;
+    line-height: 1;
+    user-select:none;
+  }
 
+  /* 問題表示（クイズ中はスクロールしない） */
   #questionBox{
     padding: 14px 16px 10px;
-    text-align: center;
+    text-align:center;
+    overflow:hidden;        /* ←右スクロールバー封じ */
     flex:0 0 auto;
-    overflow:hidden;       /* クイズ中はスクロールしない */
-    max-height: 38vh;
   }
   body.results #questionBox{
-    overflow:auto;         /* 結果画面だけ：ここだけスクロール可 */
-    max-height: 52vh;
+    overflow:auto;          /* 結果画面だけスクロール可 */
     text-align:left;
-    border-top:1px solid rgba(43,47,58,.35);
+    max-height: 52vh;
   }
 
   #question{
     margin: 6px 0 4px;
-    font-weight: 700;
+    font-weight: 800;
     font-size: clamp(20px, 3.2vw, 30px);
     line-height:1.35;
     text-align:center;
     overflow-wrap:anywhere;
+    min-height: 1.35em;
   }
   body.results #question{ text-align:left; }
 
-  #sub{ font-size: 12px; color: var(--muted); margin-top:6px; }
+  #sub{
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
 
-  #arena{ flex:1 1 auto; display:flex; min-height:220px; }
+  /* 左右タッチ面：従来どおり最大化（小さくしない） */
+  #arena{
+    flex: 1 1 auto;
+    display:flex;
+    min-height: 240px;
+  }
   .side{
-    flex:1; display:flex; align-items:center; justify-content:center;
-    font-size: clamp(28px, 6vw, 44px);
-    font-weight:800;
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: clamp(30px, 7vw, 46px);
+    font-weight:900;
     border-top:1px solid #222;
     user-select:none;
     -webkit-tap-highlight-color: transparent;
   }
-  .left{ border-right:1px solid #222; background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.08)); }
-  .right{ background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.08)); }
+  .left{
+    border-right:1px solid #222;
+    background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.08));
+  }
+  .right{
+    background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.08));
+  }
   .label{ pointer-events:none; opacity:.92; }
 
-  body.results #arena{ opacity:.25; pointer-events:none; } /* 結果中は操作しない */
+  body.results #arena{ opacity:.25; pointer-events:none; }
 
   #scoreBar{
     padding: 8px 16px;
@@ -146,40 +191,57 @@
     display:flex;
     justify-content:space-between;
     gap:10px;
-    flex:0 0 auto;
+    border-top:1px solid rgba(43,47,58,.35);
   }
 
+  #footerNote{
+    text-align:center;
+    font-size:11px;
+    color: var(--muted);
+    padding: 8px 0 12px;
+  }
+
+  /* スタートボタン：常に画面下に固定（スマホで消えない） */
   #controls{
-    padding: 12px 16px;
-    background: var(--card);
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: min(720px, calc(100% - 24px));
+    z-index: 55;
     display:flex;
     justify-content:center;
-    flex:0 0 auto;
+    pointer-events:none; /* 中のボタンだけ押せるように */
   }
-  button{
-    width:100%;
-    max-width:360px;
-    padding: 12px;
+  #btnStart{
+    pointer-events:auto;
+    width: 100%;
+    max-width: 420px;
+    padding: 14px 14px;
     border: 1px solid var(--bd);
     background:#1c222b;
     color: var(--fg);
-    border-radius:12px;
-    font-size:14px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 800;
     cursor:pointer;
   }
-  button:active { transform: scale(.98); }
+  #btnStart:active{ transform: scale(.99); }
 
   #flash{
-    position: fixed; inset:0; display:none; align-items:center; justify-content:center;
+    position: fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
     font-size: clamp(56px, 18vw, 120px);
-    font-weight:900; z-index: 10;
+    font-weight:900;
+    z-index: 80;
   }
   #flash.ok{ background: rgba(29,185,84,.12); color: var(--ok); }
   #flash.ng{ background: rgba(255,77,79,.12); color: var(--ng); }
 
-  #footerNote{ text-align:center; font-size:11px; color: var(--muted); padding:8px 0 12px; flex:0 0 auto; }
-
-  /* 結果表示 */
+  /* 結果 */
   .result-item{ font-size:14px; margin-bottom:10px; }
   .badge{
     display:inline-block;
@@ -217,22 +279,17 @@
 <div id="app">
   <header>
     <div class="title" aria-label="BokiExercise 左右タッチ即判定">
-      <div class="t1">BokiExercise</div>
+      <div class="t2">BokiExercise</div>
       <div class="t2">左右タッチ即判定</div>
     </div>
     <div class="pill">標準</div>
   </header>
 
-  <div id="growthBar">
-    <div id="growthBadge">
-      <span id="growthEmoji">🌱</span>
-      <span id="growthText">スタート待ち</span>
-    </div>
-  </div>
+  <div id="growthBar"><div id="growthEmoji">🌰</div></div>
 
   <div id="questionBox">
-    <div id="question">スタートを押してください</div>
-    <div id="sub">左右＝借方／貸方（1〜5🌱、6〜14🌿、満点🌸）</div>
+    <div id="question"></div>
+    <div id="sub">左／右＝借方／貸方（満点🌸）</div>
   </div>
 
   <div id="arena">
@@ -245,11 +302,11 @@
     <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span></div>
   </div>
 
-  <div id="controls">
-    <button id="btnStart">スタート / シャッフル</button>
-  </div>
-
   <div id="footerNote">© BokiExercise</div>
+</div>
+
+<div id="controls">
+  <button id="btnStart">スタート / シャッフル</button>
 </div>
 
 <div id="flash"></div>
@@ -280,6 +337,7 @@ let questions = JSON.parse(JSON.stringify(set_standard));
 let idx = 0, ok = 0, ng = 0;
 let results = [];
 
+const elQuestion = document.getElementById('question');
 const elIdx = document.getElementById('idx');
 const elTotal = document.getElementById('total');
 const elOk = document.getElementById('ok');
@@ -287,24 +345,19 @@ const elNg = document.getElementById('ng');
 const flash = document.getElementById('flash');
 const questionBox = document.getElementById('questionBox');
 const growthEmoji = document.getElementById('growthEmoji');
-const growthText  = document.getElementById('growthText');
 
 elTotal.textContent = questions.length;
 
-function updateGrowthBadge(){
+function setGrowthEmoji(){
   const total = questions.length;
   if (total > 0 && ok === total){
     growthEmoji.textContent = "🌸";
-    growthText.textContent  = "満点！花が咲いた";
   } else if (ok >= 6){
     growthEmoji.textContent = "🌿";
-    growthText.textContent  = `成長中（正解 ${ok}）`;
   } else if (ok >= 1){
     growthEmoji.textContent = "🌱";
-    growthText.textContent  = `芽（正解 ${ok}）`;
   } else {
-    growthEmoji.textContent = "🌱";
-    growthText.textContent  = "スタート待ち";
+    growthEmoji.textContent = "🌰";
   }
 }
 
@@ -318,21 +371,15 @@ function shuffle(a){
 
 function start(){
   document.body.classList.remove('results');
-  idx = 0; ok = 0; ng = 0;
-  results = [];
+  idx = 0; ok = 0; ng = 0; results = [];
   questions = shuffle([...questions]);
 
   elOk.textContent = ok;
   elNg.textContent = ng;
-  elTotal.textContent = questions.length;
   elIdx.textContent = 0;
+  elTotal.textContent = questions.length;
 
-  questionBox.innerHTML = `
-    <div id="question">スタート！</div>
-    <div id="sub">左右＝借方／貸方（1〜5🌱、6〜14🌿、満点🌸）</div>
-  `;
-
-  updateGrowthBadge();
+  setGrowthEmoji();
   next();
 }
 
@@ -342,8 +389,8 @@ function next(){
     return;
   }
   const item = questions[idx];
-  document.getElementById('question').textContent = item.q;
-  elIdx.textContent = idx+1;
+  elQuestion.textContent = item.q;
+  elIdx.textContent = idx + 1;
 }
 
 function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
@@ -372,7 +419,6 @@ function showFlash(isOK){
 
 function judge(side){
   if (idx >= questions.length) return;
-
   const item = questions[idx];
   const isOK = (side === item.correct);
 
@@ -390,7 +436,7 @@ function judge(side){
 
   elOk.textContent = ok;
   elNg.textContent = ng;
-  updateGrowthBadge();
+  setGrowthEmoji();
 
   idx++;
   setTimeout(next, 600);
@@ -452,7 +498,7 @@ function showResults(){
 
   questionBox.innerHTML = html;
   elIdx.textContent = total;
-  updateGrowthBadge();
+  setGrowthEmoji();
   questionBox.scrollTop = 0;
 }
 
@@ -477,8 +523,8 @@ window.addEventListener('keydown', (e)=>{
   else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
 });
 
-// 初期表示
-updateGrowthBadge();
+// 初期（スタート前）
+setGrowthEmoji();
 </script>
 </body>
 </html>
