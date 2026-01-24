@@ -1,111 +1,133 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>BokiExercise 左右タッチ即判定クイズ（標準）</title>
 
 <style>
   :root{
     --bg:#0f1115; --fg:#e8eaf1; --muted:#9aa0a6;
     --ok:#1db954; --ng:#ff4d4f; --card:#171a21;
-    --line:#222; --line2:#2b2f3a;
   }
   *{ box-sizing:border-box; }
-  html,body{
+  html, body{
     height:100%; margin:0; background:var(--bg); color:var(--fg);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP",
-      "Hiragino Kaku Gothic ProN","Yu Gothic UI","YuGothic","Meiryo",sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI","YuGothic","Meiryo",sans-serif;
+    overflow-x: hidden; /* ← 横スクロール対策（重要） */
   }
-  #app{ display:flex; flex-direction:column; height:100%; max-width:720px; margin:0 auto; }
+
+  #app{
+    display:flex; flex-direction:column;
+    height:100%;
+    max-width:720px; margin:0 auto;
+  }
 
   /* ▼ Topボタン（常に左上固定） */
   .top-link{
     position: fixed;
     left: 12px;
     top: 10px;
-    z-index: 50;
+    z-index: 999;
     font-size:12px;
     color: var(--fg);
     text-decoration:none;
-    border:1px solid var(--line2);
-    background: rgba(23,26,33,.78);
+    border:1px solid #2b2f3a;
+    background: rgba(15,17,21,.35);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     padding:6px 12px;
     border-radius:999px;
-    opacity:.85;
-    transition: opacity .15s ease, transform .05s ease, background .15s ease;
+    opacity:.70;                 /* 問題中は半透明 */
+    transition: opacity .15s ease, background .15s ease, transform .05s ease;
   }
   .top-link:active{ transform: scale(.98); }
   body.results .top-link{
-    opacity: 1;
+    opacity: 1;                  /* 結果画面では強調 */
     background: rgba(23,26,33,.92);
   }
 
   header{
     padding: 14px 16px 10px;
     background: var(--card);
-    position: sticky;
-    top: 0;
-    z-index: 5;
-  }
-  .header-inner{
-    position: relative;
-    display:flex;
+    display:grid;
+    grid-template-columns: 1fr auto; /* 右にpill */
     align-items:center;
-    justify-content:center; /* 中央寄せ */
-    min-height:44px;
   }
-  .title{
+  header .title{
     text-align:center;
     line-height:1.05;
     font-weight:800;
     letter-spacing:.2px;
   }
-  .title .line1{ font-size: 15px; }
-  .title .line2{ font-size: 16px; margin-top:4px; }
-
+  header .title .t1{ font-size:16px; }
+  header .title .t2{ font-size:20px; margin-top:4px; }
   .pill{
-    position:absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 4px 10px;
-    border:1px solid var(--line2);
+    padding: 2px 10px;
+    border:1px solid #2b2f3a;
     border-radius:999px;
-    font-size:11px;
+    font-size:12px;
     color: var(--muted);
-    background: rgba(15,17,21,.35);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
     white-space:nowrap;
   }
 
+  /* ▼ 上部は“取りすぎない”ように低め */
   #questionBox{
-    padding: 18px 16px;
+    padding: 14px 16px 8px;
     text-align:center;
-    font-size: clamp(22px, 6vw, 34px);
-    line-height:1.35;
     overflow-y:auto;
-    max-height: 40vh;
+    max-height: 18vh;  /* ← ここを低くして、左右タッチ面積を確保 */
   }
-  #question{ margin: 6px 0 6px; font-weight: 800; }
-  #sub{ font-size: 12px; color: var(--muted); }
-
-  #arena{ flex:1; display:flex; }
-  .side{
-    flex:1; display:flex; align-items:center; justify-content:center;
-    font-size: clamp(30px, 8vw, 46px);
+  #question{
+    margin: 0;
     font-weight:900;
-    border-top:1px solid var(--line);
-    user-select:none;
-    -webkit-tap-highlight-color:transparent;
+    font-size: clamp(24px, 5.8vw, 40px);
   }
-  .left{ border-right:1px solid var(--line); background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.08)); }
-  .right{ background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.08)); }
-  .label{ pointer-events:none; opacity:.92; }
+  #sub{
+    margin-top:6px;
+    font-size:12px;
+    color: var(--muted);
+  }
+
+  /* ▼ 左右タッチ面積：ここが主役。大きく固定 */
+  #arena{
+    flex:1;
+    min-height: 50vh; /* ← “小さくなった”対策：最低でもこの高さ */
+    display:flex;
+    border-top:1px solid #222;
+  }
+  .side{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+    font-weight:900;
+    font-size: clamp(34px, 7vw, 56px);
+    letter-spacing:.5px;
+  }
+  .left{
+    border-right:1px solid #222;
+    background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.10));
+  }
+  .right{
+    background: linear-gradient(180deg, rgba(45,45,55,.25), rgba(0,0,0,.10));
+  }
+  .label{
+    pointer-events:none;
+    opacity:.92;
+    text-align:center;
+  }
+  .label small{
+    display:block;
+    margin-top:6px;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:600;
+    letter-spacing:0;
+  }
 
   #scoreBar{
     padding: 10px 16px;
@@ -113,15 +135,35 @@
     color: var(--muted);
     display:flex;
     justify-content:space-between;
-    gap:10px;
   }
 
+  /* ▼ ボタンは“スタートだけ” */
+  #controls{
+    padding: 10px 16px 14px;
+    background: var(--card);
+  }
+  button{
+    width:100%;
+    padding: 14px;
+    border: 1px solid #2b2f3a;
+    background:#1c222b;
+    color: var(--fg);
+    border-radius:14px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  button:active{ transform: scale(.99); }
+
   #flash{
-    position:fixed; inset:0;
-    display:none; align-items:center; justify-content:center;
+    position: fixed;
+    inset: 0;
+    display:none;
+    align-items:center;
+    justify-content:center;
     font-size: clamp(56px, 18vw, 120px);
     font-weight:900;
-    z-index: 60;
+    z-index: 2000;
   }
   #flash.ok{ background: rgba(29,185,84,.12); color: var(--ok); }
   #flash.ng{ background: rgba(255,77,79,.12); color: var(--ng); }
@@ -130,41 +172,26 @@
     text-align:center;
     font-size:11px;
     color: var(--muted);
-    padding:8px 0 12px;
+    padding:10px 0 12px;
   }
 
   /* 結果表示用 */
-  .growth-emoji{ font-size: 120px; line-height: 1.05; }
-  .growth-box{ text-align:center; margin-bottom:12px; }
+  .growth-emoji{ font-size:120px; line-height:1.1; }
+  .growth-box{ text-align:center; margin: 10px 0 8px; }
   .small-muted{ font-size:11px; color:var(--muted); }
-  .result-item{ font-size:14px; margin-bottom:10px; text-align:left; }
-  .badge{
+  .result-item{ font-size:14px; margin-bottom:8px; text-align:left; }
+  .result-item span.badge{
     display:inline-block; min-width:2.2em; text-align:center;
     border-radius:999px; padding:0 6px; margin-right:6px; font-size:12px;
   }
   .badge-ok{ background:rgba(29,185,84,.15); color:var(--ok); }
   .badge-ng{ background:rgba(255,77,79,.15); color:var(--ng); }
-
   textarea{
     width:100%; min-height:120px;
     background:#0f1319; color:var(--fg);
-    border:1px solid var(--line2);
-    border-radius:8px;
-    padding:10px;
-    font-size:12px;
+    border:1px solid #2b2f3a; border-radius:8px;
+    padding:10px; font-size:12px;
   }
-  .retry{
-    display:inline-block;
-    margin-top:10px;
-    font-size:13px;
-    color: var(--fg);
-    text-decoration:none;
-    border:1px solid var(--line2);
-    padding:8px 12px;
-    border-radius:10px;
-    background: rgba(15,17,21,.35);
-  }
-  .retry:active{ opacity:.75; }
 </style>
 </head>
 
@@ -173,27 +200,34 @@
 
 <div id="app">
   <header>
-    <div class="header-inner">
-      <div class="title" aria-label="BokiExercise 左右タッチ即判定クイズ">
-        <div class="line1">BokiExercise</div>
-        <div class="line2">左右タッチ即判定クイズ</div>
-      </div>
-      <div class="pill">標準</div>
+    <div class="title">
+      <div class="t1">BokiExercise</div>
+      <div class="t2">左右タッチ即判定クイズ</div>
     </div>
+    <div class="pill">標準</div>
   </header>
 
   <div id="questionBox">
-<div id="question">スタート</div>
-<div id="sub">※ 画面をタップして開始（左右＝借方/貸方）（満点で🌸）
+    <div id="question">スタート</div>
+    <div id="sub">左右＝借方/貸方　満点🌸</div>
   </div>
+
   <div id="arena">
-    <div class="side left"  id="leftSide"  role="button" aria-label="左（借方）"><div class="label">左（借方）</div></div>
-    <div class="side right" id="rightSide" role="button" aria-label="右（貸方）"><div class="label">右（貸方）</div></div>
+    <div class="side left" id="leftSide" role="button" aria-label="左">
+      <div class="label">左<small>hidari</small></div>
+    </div>
+    <div class="side right" id="rightSide" role="button" aria-label="右">
+      <div class="label">右<small>migi</small></div>
+    </div>
   </div>
 
   <div id="scoreBar">
-    <div>問 <span id="idx">0</span>/<span id="total">15</span></div>
-    <div><span id="growth">●</span> 正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
+    <div>問 <span id="idx">0</span>/<span id="total">0</span></div>
+    <div>正解 <span id="ok">0</span> ・ ミス <span id="ng">0</span> ・ 連続 <span id="streak">0</span></div>
+  </div>
+
+  <div id="controls">
+    <button id="btnStart">スタート / シャッフル</button>
   </div>
 
   <div id="footerNote">© BokiExercise</div>
@@ -203,10 +237,9 @@
 
 <script>
 /* =======================
-   ▼ 3級仕訳標準（15問）▼
-   ※問題文は変更しません
-======================= */
-const set_standard = [
+   ▼ 3級仕訳標準（15問）
+   ======================= */
+const questionsBase = [
   { q: "資産（現金・売掛金など）が『増加』するのは？", correct: "left" },
   { q: "資産（現金・売掛金など）が『減少』するのは？", correct: "right" },
   { q: "負債（買掛金・借入金など）が『増加』するのは？", correct: "right" },
@@ -224,10 +257,10 @@ const set_standard = [
   { q: "前受金が発生したときの『前受金』は？", correct: "right" }
 ];
 
-let questions = JSON.parse(JSON.stringify(set_standard));
+let questions = [];
 let idx = 0, ok = 0, ng = 0, streak = 0;
-let results = [];
 let started = false;
+let results = [];
 
 const elQ = document.getElementById('question');
 const elSub = document.getElementById('sub');
@@ -236,11 +269,11 @@ const elTotal = document.getElementById('total');
 const elOk = document.getElementById('ok');
 const elNg = document.getElementById('ng');
 const elStreak = document.getElementById('streak');
-const elGrowth = document.getElementById('growth');
 const flash = document.getElementById('flash');
 const questionBox = document.getElementById('questionBox');
+const btnStart = document.getElementById('btnStart');
 
-elTotal.textContent = questions.length;
+elTotal.textContent = questionsBase.length;
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -252,7 +285,6 @@ function shuffle(a){
 
 function vibrate(ms=50){ if (navigator.vibrate) navigator.vibrate(ms); }
 
-// 簡易ビープ
 let audioCtx = null;
 function beep(okFlag=true){
   try{
@@ -268,39 +300,6 @@ function beep(okFlag=true){
   }catch(e){}
 }
 
-function growthIconByScore(currentOk){
-  // 0-4:●(種) / 5-11:🌱 / 12-14:🌿 / 15:🌸
-  if (currentOk >= questions.length) return "🌸";
-  if (currentOk >= 12) return "🌿";
-  if (currentOk >= 5)  return "🌱";
-  return "●";
-}
-function refreshScore(){
-  elOk.textContent = ok;
-  elNg.textContent = ng;
-  elStreak.textContent = streak;
-  elIdx.textContent = started ? Math.min(idx+1, questions.length) : 0;
-  elGrowth.textContent = growthIconByScore(ok);
-}
-
-function start(){
-  started = true;
-  idx = 0; ok = 0; ng = 0; streak = 0;
-  results = [];
-  questions = shuffle([...questions]);
-  elSub.textContent = "左右＝借方/貸方（満点で🌸）";
-  showQuestion();
-  refreshScore();
-}
-
-function showQuestion(){
-  if (idx >= questions.length){
-    showResults();
-    return;
-  }
-  elQ.textContent = questions[idx].q;
-}
-
 function showFlash(isOK){
   flash.className = isOK ? 'ok' : 'ng';
   flash.textContent = isOK ? '⭕' : '❌';
@@ -308,11 +307,76 @@ function showFlash(isOK){
   setTimeout(()=>{ flash.style.display='none'; }, 350);
 }
 
-function judge(side){
-  if (!started){
-    start();
+function start(){
+  document.body.classList.remove('results');
+  started = true;
+  idx = 0; ok = 0; ng = 0; streak = 0;
+  results = [];
+  questions = shuffle(JSON.parse(JSON.stringify(questionsBase)));
+  elTotal.textContent = questions.length;
+  elOk.textContent = ok; elNg.textContent = ng; elStreak.textContent = streak;
+  next();
+}
+
+function next(){
+  if (idx >= questions.length){
+    showResults();
     return;
   }
+  const item = questions[idx];
+  elQ.textContent = item.q;
+  elIdx.textContent = idx+1;
+  elSub.textContent = '左右＝借方/貸方（●点=🌱 / 成長=🌿 / 満点=🌸）';
+}
+
+function showResults(){
+  document.body.classList.add('results');
+
+  const total = questions.length;
+  const percent = total ? Math.round(ok / total * 100) : 0;
+
+  // 成長演出
+  let emoji = "🌱", msg = "今日は種まきの日。少しずつ育てましょう。";
+  if (ok === total && total > 0) { emoji="🌸"; msg="全問正解！花が咲きました。"; }
+  else if (ok >= 10) { emoji="🌿"; msg="かなり育っています。この調子！"; }
+
+  let html = "";
+  html += `<div class="growth-box"><div class="growth-emoji">${emoji}</div><div class="small-muted">${msg}</div></div>`;
+  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:800;">結果一覧</div>`;
+  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}（${percent}%）</div>`;
+
+  results.forEach(r => {
+    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
+    const badgeLabel = r.isOK ? '○' : '×';
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+    html += `<div class="result-item">
+      <span class="badge ${badgeClass}">${badgeLabel}</span>
+      <strong>${r.no}. ${r.question}</strong><br>
+      <span class="small-muted">あなたの答え：${answeredJp} ／ 正解：${correctJp}</span>
+    </div>`;
+  });
+
+  // コピー用
+  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
+  results.forEach(r => {
+    const answeredJp = r.answered === 'left' ? '左' : '右';
+    const correctJp  = r.correct  === 'left' ? '左' : '右';
+    const status = r.isOK ? "正解" : "不正解";
+    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
+    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
+  });
+
+  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">コピー用（全選択→コピー）</div>
+           <textarea readonly onclick="this.select()">${textReport}</textarea>`;
+
+  questionBox.innerHTML = html;
+  elSub.textContent = 'お疲れさまでした。下のテキストで振り返りできます。';
+  btnStart.textContent = 'もう一度（シャッフル）';
+}
+
+function judge(side){
+  if(!started){ start(); return; }
   if (idx >= questions.length) return;
 
   const item = questions[idx];
@@ -330,111 +394,18 @@ function judge(side){
   if (isOK){ ok++; streak++; vibrate(20); beep(true); }
   else { ng++; streak=0; vibrate([30,40,30]); beep(false); }
 
+  elOk.textContent = ok;
+  elNg.textContent = ng;
+  elStreak.textContent = streak;
+
   idx++;
-  refreshScore();
-  setTimeout(showQuestion, 600);
+  setTimeout(next, 600);
 }
 
-function showResults(){
-  document.body.classList.add('results');
-
-  const total = questions.length;
-  const percent = total ? Math.round(ok / total * 100) : 0;
-
-  let growthHtml = "";
-  if (total > 0 && ok === total) {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌸</div>
-        <div class="small-muted">全問正解！花が咲きました。</div>
-      </div>
-    `;
-  } else if (ok <= 4) {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">●</div>
-        <div class="small-muted">まずは種。少しずつ育てましょう。</div>
-      </div>
-    `;
-  } else if (ok <= 11) {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌱</div>
-        <div class="small-muted">芽が出ました。続ければ伸びます。</div>
-      </div>
-    `;
-  } else {
-    growthHtml = `
-      <div class="growth-box">
-        <div class="growth-emoji">🌿</div>
-        <div class="small-muted">かなり成長！あと一歩で満開です。</div>
-      </div>
-    `;
-  }
-
-  let html = "";
-  html += growthHtml;
-  html += `<div style="margin-bottom:10px;font-size:18px;font-weight:800;">結果一覧</div>`;
-  html += `<div class="small-muted" style="margin-bottom:10px;">正解 ${ok} / ${total}（${percent}%）</div>`;
-
-  results.forEach(r => {
-    const badgeClass = r.isOK ? 'badge-ok' : 'badge-ng';
-    const badgeLabel = r.isOK ? '○' : '×';
-    const answeredJp = r.answered === 'left' ? '左' : '右';
-    const correctJp  = r.correct  === 'left' ? '左' : '右';
-
-    html += `<div class="result-item">
-      <span class="badge ${badgeClass}">${badgeLabel}</span>
-      <strong>${r.no}. ${r.question}</strong><br>
-      <span class="small-muted">あなた：${answeredJp} ／ 正解：${correctJp}</span>
-    </div>`;
-  });
-
-  html += `<div style="margin-top:14px; font-size:12px; color:var(--muted);">コピー用（Excel等）</div>`;
-
-  let textReport = "No,問題文,あなたの答え,正解,正誤\n";
-  results.forEach(r => {
-    const answeredJp = r.answered === 'left' ? '左' : '右';
-    const correctJp  = r.correct  === 'left' ? '左' : '右';
-    const status = r.isOK ? "正解" : "不正解";
-    const safeQ = '"' + String(r.question).replace(/"/g,'""') + '"';
-    textReport += `${r.no},${safeQ},${answeredJp},${correctJp},${status}\n`;
-  });
-
-  html += `<div style="margin-top:10px;">
-    <textarea readonly onclick="this.select()">${textReport}</textarea>
-  </div>`;
-
-  html += `<a class="retry" href="#" id="retryLink">もう一度（シャッフル）</a>`;
-
-  questionBox.innerHTML = html;
-
-  // スコア表示も結果に合わせて
-  elIdx.textContent = total;
-  elGrowth.textContent = growthIconByScore(ok);
-
-  // もう一度（ページ内で再開）
-  setTimeout(()=>{
-    const retry = document.getElementById('retryLink');
-    if(retry){
-      retry.addEventListener('click', (e)=>{
-        e.preventDefault();
-        document.body.classList.remove('results');
-        // 初期表示に戻す
-        questionBox.innerHTML = `
-          <div id="question">画面をタップして開始</div>
-          <div id="sub">左右＝借方/貸方（満点で🌸）</div>
-        `;
-        // 再取得（DOM差し替えで参照が消えるので取り直し）
-        location.reload(); // 仕様をシンプルに：確実に統一状態へ
-      });
-    }
-  }, 0);
-}
-
-// タップ操作
+// UI操作
 document.getElementById('leftSide').addEventListener('click', ()=>judge('left'));
 document.getElementById('rightSide').addEventListener('click', ()=>judge('right'));
+btnStart.addEventListener('click', start);
 
 // PC授業向け：Space=左 / Enter,→=右 / ←=左
 window.addEventListener('keydown', (e)=>{
@@ -442,8 +413,6 @@ window.addEventListener('keydown', (e)=>{
   else if (e.code === 'Enter' || e.key === 'Enter' || e.code==='ArrowRight') { judge('right'); e.preventDefault(); }
   else if (e.code==='ArrowLeft'){ judge('left'); e.preventDefault(); }
 });
-
-refreshScore();
 </script>
 </body>
 </html>
